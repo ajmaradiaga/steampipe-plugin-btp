@@ -1,0 +1,12 @@
+connection "btp" {
+  plugin = "local/btp"
+
+  endpoints_accounts_service_url = "https://accounts-service.cfapps.[region].hana.ondemand.com"
+  
+  uaa_apiurl = "https://api.authentication.[region].hana.ondemand.com"
+  uaa_clientid = "sb-ut-01s43041-477j-4657-0667-av1fp726624m-idkkc!w265388|cis-central!b14"
+  uaa_clientsecret = "500251t1-7qj3-522g-i358-74180u561phh$PSws1e0ghHVMcupcY7t2uPKcpfH7kMITV2pYCnqecpT="
+
+  username = "user@company.com"
+  password = "MyStrongPassword"
+}
