@@ -24,3 +24,21 @@ make && steampipe query "select * from btp_accounts_global_account"
 select guid, display_name, description, parent_guid, state_message from btp_subaccounts
 select * from btp_accounts_global_account
 ```
+
+Tree structure of .steampipe
+
+```
+~/.steampipe/
+├── config
+│   ├── ...
+│   ├── btp.spc
+├── db
+│   ......
+└── plugins
+    ├── hub.steampipe.io
+    │   └── plugins
+    │       └── turbot
+    ├── local
+    │   └── btp
+    │       └── btp.plugin
+```
