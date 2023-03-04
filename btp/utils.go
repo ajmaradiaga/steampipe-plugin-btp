@@ -1,43 +1,28 @@
 package btp
 
-import (
-	"context"
-	"errors"
-	"os"
+// func connect(ctx context.Context, d *plugin.QueryData) (*BTPClient, error) {
+// 	// You can set custom *http.Client here
+// 	client, err := NewBTPClient(nil)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	"github.com/turbot/steampipe-plugin-sdk/plugin"
-)
+// 	btpEnvironmentAccessToken := os.Getenv("BTP_ACCESS_TOKEN")
 
-func connect(ctx context.Context, d *plugin.QueryData) (*Client, error) {
-	// You can set custom *http.Client here
-	client, err := NewClient(nil)
-	if err != nil {
-		return nil, err
-	}
+// 	btpConfig := GetConfig(d.Connection)
 
-	accessToken := os.Getenv("BTP_ACCESS_TOKEN")
+// 	// Prioritise access token set as an environment variable
+// 	if btpEnvironmentAccessToken != "" {
+// 		btpConfig.AccessToken = &btpEnvironmentAccessToken
+// 	} else if btpConfig.AccessToken != nil {
+// 		btpEnvironmentAccessToken = *btpConfig.AccessToken
+// 	}
 
-	btpConfig := GetConfig(d.Connection)
-	if btpConfig.AccessToken != nil {
-		accessToken = *btpConfig.AccessToken
-	} else if accessToken != "" {
-		btpConfig.AccessToken = &accessToken
-	}
+// 	if btpEnvironmentAccessToken == "" {
+// 		return nil, errors.New("'access_token' must be set in the connection configuration. Edit your connection configuration file or set the BTP_ACCESS_TOKEN environment variable and then restart Steampipe")
+// 	}
 
-	if accessToken == "" {
-		return nil, errors.New("'access_token' must be set in the connection configuration. Edit your connection configuration file or set the BTP_ACCESS_TOKEN environment variable and then restart Steampipe")
-	}
+// 	client.SetHeader("Authorization", "Bearer "+btpEnvironmentAccessToken)
 
-	client.SetHeader("Authorization", "Bearer "+accessToken)
-
-	// // example.zendesk.com
-	// err = client.SetSubdomain(subdomain)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// // Authenticate with API token
-	// client.SetCredential(zendesk.NewAPITokenCredential(user, token))
-
-	return client, nil
-}
+// 	return client, nil
+// }

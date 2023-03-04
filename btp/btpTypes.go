@@ -1,5 +1,11 @@
 package btp
 
+type CustomProperty struct {
+	AccountGUID string `json:"accountGUID"`
+	Key         string `json:"key"`
+	Value       string `json:"value"`
+}
+
 type GlobalAccount struct {
 	GUID             string `json:"guid,omitempty"`
 	DisplayName      string `json:"displayName,omitempty"`
@@ -33,4 +39,23 @@ type Subaccount struct {
 	CreatedDate       int64  `json:"createdDate"`
 	CreatedBy         string `json:"createdBy"`
 	ModifiedDate      int64  `json:"modifiedDate"`
+}
+
+type Directory struct {
+	GUID              string           `json:"guid"`
+	ParentType        string           `json:"parentType"`
+	GlobalAccountGUID string           `json:"globalAccountGUID"`
+	DisplayName       string           `json:"displayName"`
+	CreatedDate       int64            `json:"createdDate"`
+	CreatedBy         string           `json:"createdBy"`
+	ModifiedDate      int64            `json:"modifiedDate"`
+	EntityState       string           `json:"entityState"`
+	StateMessage      string           `json:"stateMessage"`
+	DirectoryType     string           `json:"directoryType"`
+	DirectoryFeatures []string         `json:"directoryFeatures"`
+	CustomProperties  []CustomProperty `json:"customProperties"`
+	ContractStatus    string           `json:"contractStatus"`
+	ConsumptionBased  bool             `json:"consumptionBased"`
+	ParentGUID0       string           `json:"parentGuid"`
+	ParentGUID1       string           `json:"parentGUID"`
 }

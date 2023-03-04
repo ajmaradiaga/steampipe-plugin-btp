@@ -2,70 +2,152 @@ package btp
 
 import (
 	"context"
+	"errors"
 	"io/ioutil"
 	"net/http"
-	"net/url"
+	"os"
+
+	"github.com/turbot/steampipe-plugin-sdk/plugin"
+)
+
+type BTPService string
+
+const (
+	AccountsService BTPService = "AccountsService"
 )
 
 var defaultHeaders = map[string]string{
 	"Content-Type": "application/json",
 }
 
+var defaultQueryStrings = map[string]string{}
+
 type (
-	// Client of Zendesk API
-	Client struct {
-		baseURL    *url.URL
+	// BTPClient of SAP BTP API
+	BTPClient struct {
 		httpClient *http.Client
+		config     BTPConfig
 		headers    map[string]string
+		query      map[string]string
 	}
 
 	// BaseAPI encapsulates base methods for zendesk client
 	BaseAPI interface {
 		Get(ctx context.Context, path string) ([]byte, error)
-		Post(ctx context.Context, path string, data interface{}) ([]byte, error)
-		Put(ctx context.Context, path string, data interface{}) ([]byte, error)
-		Delete(ctx context.Context, path string) error
 	}
 )
 
-// NewClient creates new Zendesk API client
-func NewClient(httpClient *http.Client) (*Client, error) {
+// NewBTPClient creates new SAP BTP API client
+func NewBTPClient(httpClient *http.Client, connection *plugin.Connection) (*BTPClient, error) {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
 
-	client := &Client{httpClient: httpClient}
+	client := &BTPClient{httpClient: httpClient}
+
+	if connection == nil || connection.Config == nil {
+		client.config = BTPConfig{}
+	} else {
+		config, _ := connection.Config.(BTPConfig)
+		client.config = config
+	}
+
 	client.headers = defaultHeaders
+	client.query = defaultQueryStrings
+
 	return client, nil
 }
 
-// SetHeader saves HTTP header in client. It will be included all API request
-func (z *Client) SetHeader(key string, value string) {
-	z.headers[key] = value
-}
-
-// SetEndpointURL replace full URL of endpoint without subdomain validation.
-// This is mainly used for testing to point to mock API server.
-func (z *Client) SetEndpointURL(newURL string) error {
-	baseURL, err := url.Parse(newURL)
-	if err != nil {
-		return err
+// Retrieves the service URL from the BTP Config
+func (b *BTPClient) getServiceURL(service BTPService) (string, error) {
+	if service == AccountsService {
+		return *b.config.EndpointsAccountServiceUrl, nil
 	}
 
-	z.baseURL = baseURL
-	return nil
+	return "", nil
 }
 
-// get get JSON data from API and returns its body as []bytes
-func (z *Client) get(ctx context.Context, path string) ([]byte, error) {
-	req, err := http.NewRequest(http.MethodGet, z.baseURL.String()+path, nil)
+// prepare request sets common request variables and sets headers and query strings
+func (b *BTPClient) prepareRequest(ctx context.Context, req *http.Request, headers map[string]string, queryStrings map[string]string) *http.Request {
+	out := req.WithContext(ctx)
+
+	b.handleAuthentication()
+
+	if headers != nil {
+		for key, value := range headers {
+			b.headers[key] = value
+		}
+	}
+
+	if queryStrings != nil {
+		for key, value := range headers {
+			b.query[key] = value
+		}
+	}
+
+	b.includeHeaders(out)
+	b.includeQueryStrings(out)
+
+	return out
+}
+
+// includeHeaders set HTTP headers from client.headers to *http.Request
+func (b *BTPClient) includeHeaders(req *http.Request) {
+	for key, value := range b.headers {
+		req.Header.Set(key, value)
+	}
+}
+
+// includeHeaders set HTTP headers from client.query to *http.Request
+func (b *BTPClient) includeQueryStrings(req *http.Request) {
+	q := req.URL.Query() // Get a copy of the query values.
+
+	for key, value := range b.query {
+		q.Add(key, value)
+	}
+
+	req.URL.RawQuery = q.Encode()
+}
+
+func (b *BTPClient) handleAuthentication() error {
+	btpEnvironmentAccessToken := os.Getenv("BTP_ACCESS_TOKEN")
+
+	// Prioritise access token set as an environment variable
+	if btpEnvironmentAccessToken != "" {
+		b.config.AccessToken = &btpEnvironmentAccessToken
+	} else if b.config.AccessToken != nil {
+		btpEnvironmentAccessToken = *b.config.AccessToken
+	}
+
+	if btpEnvironmentAccessToken == "" {
+		return errors.New("'access_token' must be set in the connection configuration. Edit your connection configuration file or set the BTP_ACCESS_TOKEN environment variable and then restart Steampipe")
+	}
+
+	b.headers["Authorization"] = "Bearer " + btpEnvironmentAccessToken
+
+	return nil
+
+}
+
+// Get from API
+func (b *BTPClient) Get(ctx context.Context, service BTPService, path string, headers map[string]string, queryStrings map[string]string) ([]byte, error) {
+	logger := plugin.Logger(ctx)
+
+	baseURL, err := b.getServiceURL(service)
 	if err != nil {
 		return nil, err
 	}
 
-	req = z.prepareRequest(ctx, req)
+	req, err := http.NewRequest(http.MethodGet, baseURL+path, nil)
+	if err != nil {
+		return nil, err
+	}
 
-	resp, err := z.httpClient.Do(req)
+	req = b.prepareRequest(ctx, req, headers, queryStrings)
+
+	logger.Warn("Get", "requestURI", req.URL.String())
+
+	resp, err := b.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -84,61 +166,3 @@ func (z *Client) get(ctx context.Context, path string) ([]byte, error) {
 	}
 	return body, nil
 }
-
-// prepare request sets common request variables such as authn and user agent
-func (z *Client) prepareRequest(ctx context.Context, req *http.Request) *http.Request {
-	out := req.WithContext(ctx)
-	z.includeHeaders(out)
-	// if z.credential != nil {
-	// 	if z.credential.Bearer() {
-	// 		out.Header.Add("Authorization", "Bearer "+z.credential.Secret())
-	// 	} else {
-	// 		out.SetBasicAuth(z.credential.Email(), z.credential.Secret())
-	// 	}
-	// }
-
-	return out
-}
-
-// includeHeaders set HTTP headers from client.headers to *http.Request
-func (z *Client) includeHeaders(req *http.Request) {
-	for key, value := range z.headers {
-		req.Header.Set(key, value)
-	}
-}
-
-// addOptions build query string
-// func addOptions(s string, opts interface{}) (string, error) {
-// 	u, err := url.Parse(s)
-// 	if err != nil {
-// 		return s, err
-// 	}
-
-// 	qs, err := query.Values(opts)
-// 	if err != nil {
-// 		return s, err
-// 	}
-
-// 	u.RawQuery = qs.Encode()
-// 	return u.String(), nil
-// }
-
-// Get allows users to send requests not yet implemented
-func (z *Client) Get(ctx context.Context, path string) ([]byte, error) {
-	return z.get(ctx, path)
-}
-
-// Post allows users to send requests not yet implemented
-// func (z *Client) Post(ctx context.Context, path string, data interface{}) ([]byte, error) {
-// 	return z.post(ctx, path, data)
-// }
-
-// // Put allows users to send requests not yet implemented
-// func (z *Client) Put(ctx context.Context, path string, data interface{}) ([]byte, error) {
-// 	return z.put(ctx, path, data)
-// }
-
-// // Delete allows users to send requests not yet implemented
-// func (z *Client) Delete(ctx context.Context, path string) error {
-// 	return z.delete(ctx, path)
-// }

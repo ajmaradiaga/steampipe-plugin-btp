@@ -16,15 +16,9 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		},
 		DefaultTransform: transform.FromGo().NullIfZero(),
 		TableMap: map[string]*plugin.Table{
-			// "zendesk_brand":        tableZendeskBrand(),
-			// "zendesk_group":        tableZendeskGroup(),
-			// "zendesk_organization": tableZendeskOrganization(),
-			// "zendesk_search":       tableZendeskSearch(),
-			// "zendesk_ticket":       tableZendeskTicket(),
-			// "zendesk_ticket_audit": tableZendeskTicketAudit(),
-			// "zendesk_trigger":      tableZendeskTrigger(),
-			"btp_subaccounts":             tableBTPSubaccounts(),
-			"btp_accounts_global_account": tableBTPAccountsGlobalAccount(),
+			"btp_accounts_global_account": tableBTPGlobalAccount(),
+			"btp_accounts_subaccounts":    tableBTPSubaccounts(),
+			"btp_accounts_directories":    tableBTPDirectories(),
 		},
 	}
 	return p

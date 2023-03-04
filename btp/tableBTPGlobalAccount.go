@@ -8,7 +8,11 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
-func tableBTPAccountsGlobalAccount() *plugin.Table {
+const (
+	globalAccountsPath = "/accounts/v1/globalAccount"
+)
+
+func tableBTPGlobalAccount() *plugin.Table {
 	return &plugin.Table{
 		Name:        "btp_accounts_global_account",
 		Description: "BTP Global Account details",
@@ -36,34 +40,36 @@ func tableBTPAccountsGlobalAccount() *plugin.Table {
 func listAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
 	logger := plugin.Logger(ctx)
-	logger.Trace("Hydrating list account")
+	logger.Trace("Hydrating Global Account")
 
-	conn, err := connect(ctx, d)
+	btpClient, err := NewBTPClient(nil, d.Connection)
+
 	if err != nil {
 		return nil, err
 	}
-	quals := d.KeyColumnQuals
-	plugin.Logger(ctx).Warn("listAccount", "quals", quals)
-	id := quals["id"].GetInt64Value()
-	plugin.Logger(ctx).Warn("listAccount", "id", id)
 
-	btpConf := GetConfig(d.Connection)
+	queryStrings := map[string]string{
+		"derivedAuthorizations": "any",
+	}
 
-	url := *btpConf.EndpointsAccountServiceUrl + "/accounts/v1/globalAccount?derivedAuthorizations=any"
-	err = conn.SetEndpointURL(url)
+	if err != nil {
+		return nil, err
+	}
 
-	body, err := conn.Get(ctx, "")
+	// Call the API
+	body, err := btpClient.Get(ctx, AccountsService, globalAccountsPath, nil, queryStrings)
+
+	if err != nil {
+		return nil, err
+	}
 
 	var data GlobalAccount
 
+	// Convert JSON response to structure
 	err = json.Unmarshal(body, &data)
 
-	plugin.Logger(ctx).Warn("listAccount", "url", url)
-	plugin.Logger(ctx).Warn("listAccount", "body", string(body[:]))
-	plugin.Logger(ctx).Warn("listAccount", "btpConf", *btpConf.EndpointsAccountServiceUrl)
-
-	plugin.Logger(ctx).Warn("listAccount", "data", data)
-	plugin.Logger(ctx).Warn("listAccount", "err", err)
+	logger.Debug("listAccount", "data", data)
+	logger.Debug("listAccount", "err", err)
 
 	if err != nil {
 		return nil, err

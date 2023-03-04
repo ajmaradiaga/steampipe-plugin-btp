@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-// Error an error type containing the http response from zendesk
+// Error an error type containing the http response from API
 type Error struct {
 	body []byte
 	resp *http.Response
@@ -39,12 +39,12 @@ func (e Error) Body() io.ReadCloser {
 	return ioutil.NopCloser(bytes.NewBuffer(e.body))
 }
 
-// Headers the HTTP headers returned from zendesk
+// Headers the HTTP headers returned from API
 func (e Error) Headers() http.Header {
 	return e.resp.Header
 }
 
-// Status the HTTP status code returned from zendesk
+// Status the HTTP status code returned from API
 func (e Error) Status() int {
 	return e.resp.StatusCode
 }

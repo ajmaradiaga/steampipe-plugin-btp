@@ -8,12 +8,20 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 )
 
+const (
+	subAccountsPath = "/accounts/v1/subaccounts"
+)
+
 func tableBTPSubaccounts() *plugin.Table {
 	return &plugin.Table{
-		Name:        "btp_subaccounts",
+		Name:        "btp_accounts_subaccounts",
 		Description: "BTP Subaccounts",
 		List: &plugin.ListConfig{
 			Hydrate: listSubaccounts,
+		},
+		Get: &plugin.GetConfig{
+			KeyColumns: plugin.SingleColumn("guid"),
+			Hydrate:    getSubaccount,
 		},
 		Columns: []*plugin.Column{
 			{Name: "guid", Type: proto.ColumnType_STRING, Description: "The account GUID"},
@@ -41,34 +49,28 @@ func listSubaccounts(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	logger := plugin.Logger(ctx)
 	logger.Trace("Hydrating list subaccounts")
 
-	conn, err := connect(ctx, d)
+	// conn, err := connect(ctx, d)
+	btpClient, err := NewBTPClient(nil, d.Connection)
 	if err != nil {
 		return nil, err
 	}
-	quals := d.KeyColumnQuals
-	plugin.Logger(ctx).Warn("listAccount", "quals", quals)
-	id := quals["id"].GetInt64Value()
-	plugin.Logger(ctx).Warn("listAccount", "id", id)
 
-	btpConf := GetConfig(d.Connection)
+	// Call the API
+	body, err := btpClient.Get(ctx, AccountsService, subAccountsPath, nil, nil)
 
-	url := *btpConf.EndpointsAccountServiceUrl + "/accounts/v1/subaccounts?derivedAuthorizations=any"
-	err = conn.SetEndpointURL(url)
-
-	body, err := conn.Get(ctx, "")
+	if err != nil {
+		return nil, err
+	}
 
 	var data struct {
 		Subaccounts []Subaccount `json:"value"`
 	}
 
+	// Convert JSON response to Subaccounts structure
 	err = json.Unmarshal(body, &data)
 
-	plugin.Logger(ctx).Warn("listAccount", "url", url)
-	plugin.Logger(ctx).Warn("listAccount", "body", string(body[:]))
-	plugin.Logger(ctx).Warn("listAccount", "btpConf", *btpConf.EndpointsAccountServiceUrl)
-
-	plugin.Logger(ctx).Warn("listAccount", "data", data)
-	plugin.Logger(ctx).Warn("listAccount", "err", err)
+	logger.Debug("listAccount", "data", data)
+	logger.Debug("listAccount", "err", err)
 
 	if err != nil {
 		return nil, err
@@ -79,4 +81,47 @@ func listSubaccounts(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	}
 
 	return nil, nil
+}
+
+func getSubaccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+
+	fnName := "getSubaccount"
+
+	logger := plugin.Logger(ctx)
+	logger.Trace("Hydrating get subaccount")
+
+	btpClient, err := NewBTPClient(nil, d.Connection)
+	if err != nil {
+		return nil, err
+	}
+
+	quals := d.KeyColumnQuals
+	logger.Warn(fnName, "quals", quals)
+	subaccountGuid := quals["guid"].GetStringValue()
+	logger.Warn(fnName, "guid", subaccountGuid)
+
+	path := subAccountsPath + "/" + subaccountGuid
+
+	logger.Warn(fnName, "path", path)
+
+	// Call the API
+	body, err := btpClient.Get(ctx, AccountsService, globalAccountsPath, nil, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var data Directory
+
+	// Convert JSON response to Directory structure
+	err = json.Unmarshal(body, &data)
+
+	logger.Warn(fnName, "data", data)
+	logger.Warn(fnName, "err", err)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
