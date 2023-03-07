@@ -52,7 +52,7 @@ var ConfigSchema = map[string]*schema.Attribute{
 
 	"access_token": {
 		Type:     schema.TypeString,
-		Required: true,
+		Required: false,
 	},
 }
 
