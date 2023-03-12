@@ -2,6 +2,7 @@ connection "btp" {
   plugin = "local/btp"
 
   endpoints_accounts_service_url = "https://accounts-service.cfapps.[region].hana.ondemand.com"
+  endpoints_entitlemenets_service_url = "https://entitlements-service.cfapps.[region].hana.ondemand.com"
 
   access_token = ""
 }

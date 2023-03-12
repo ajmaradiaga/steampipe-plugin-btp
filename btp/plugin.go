@@ -16,9 +16,10 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		},
 		DefaultTransform: transform.FromGo().NullIfZero(),
 		TableMap: map[string]*plugin.Table{
-			"btp_accounts_global_account": tableBTPGlobalAccount(),
-			"btp_accounts_subaccounts":    tableBTPSubaccounts(),
-			"btp_accounts_directories":    tableBTPDirectories(),
+			"btp_accounts_global_account":         tableBTPGlobalAccount(),
+			"btp_accounts_subaccounts":            tableBTPSubaccounts(),
+			"btp_accounts_directories":            tableBTPDirectories(),
+			"btp_entitlements_alloweddatacenters": tableBTPDatacenters(),
 		},
 	}
 	return p

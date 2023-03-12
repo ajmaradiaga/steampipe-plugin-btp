@@ -12,7 +12,8 @@ type BTPConfig struct {
 	UAAClientSecret *string `cty:"uaa_clientsecret"`
 
 	// Endpoints
-	EndpointsAccountServiceUrl *string `cty:"endpoints_accounts_service_url"`
+	EndpointsAccountServiceUrl      *string `cty:"endpoints_accounts_service_url"`
+	EndpointsEntitlementsServiceUrl *string `cty:"endpoints_entitlements_service_url"`
 
 	// Username
 	Username    *string `cty:"username"`
@@ -37,6 +38,10 @@ var ConfigSchema = map[string]*schema.Attribute{
 	},
 
 	"endpoints_accounts_service_url": {
+		Type: schema.TypeString,
+	},
+
+	"endpoints_entitlements_service_url": {
 		Type: schema.TypeString,
 	},
 

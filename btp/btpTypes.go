@@ -59,3 +59,16 @@ type Directory struct {
 	ParentGUID0       string           `json:"parentGuid"`
 	ParentGUID1       string           `json:"parentGUID"`
 }
+
+type DataCenter struct {
+	Name                   string `json:"name"`
+	DisplayName            string `json:"displayName"`
+	Region                 string `json:"region"`
+	Environment            string `json:"environment"`
+	IaasProvider           string `json:"iaasProvider"`
+	SupportsTrial          bool   `json:"supportsTrial"`
+	ProvisioningServiceURL string `json:"provisioningServiceUrl"`
+	SaasRegistryServiceURL string `json:"saasRegistryServiceUrl"`
+	Domain                 string `json:"domain"`
+	GeoAccess              string `json:"geoAccess"`
+}
