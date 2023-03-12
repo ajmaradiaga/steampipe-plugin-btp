@@ -13,7 +13,8 @@ import (
 type BTPService string
 
 const (
-	AccountsService BTPService = "AccountsService"
+	AccountsService    BTPService = "AccountsService"
+	EntitlementService BTPService = "EntitlementService"
 )
 
 var defaultHeaders = map[string]string{
@@ -60,8 +61,11 @@ func NewBTPClient(httpClient *http.Client, connection *plugin.Connection) (*BTPC
 
 // Retrieves the service URL from the BTP Config
 func (b *BTPClient) getServiceURL(service BTPService) (string, error) {
-	if service == AccountsService {
+	switch service {
+	case AccountsService:
 		return *b.config.EndpointsAccountServiceUrl, nil
+	case EntitlementService:
+		return *b.config.EndpointsEntitlementsServiceUrl, nil
 	}
 
 	return "", nil
@@ -73,16 +77,12 @@ func (b *BTPClient) prepareRequest(ctx context.Context, req *http.Request, heade
 
 	b.handleAuthentication()
 
-	if headers != nil {
-		for key, value := range headers {
-			b.headers[key] = value
-		}
+	for key, value := range headers {
+		b.headers[key] = value
 	}
 
-	if queryStrings != nil {
-		for key, value := range headers {
-			b.query[key] = value
-		}
+	for key, value := range queryStrings {
+		b.query[key] = value
 	}
 
 	b.includeHeaders(out)
