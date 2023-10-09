@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 const (
@@ -95,9 +95,11 @@ func getSubaccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 		return nil, err
 	}
 
-	quals := d.KeyColumnQuals
-	logger.Warn(fnName, "quals", quals)
-	subaccountGuid := quals["guid"].GetStringValue()
+	equalQuals := d.EqualsQuals
+
+	logger.Warn(fnName, "d.Quals", d.Quals)
+
+	subaccountGuid := equalQuals["guid"].GetStringValue()
 	logger.Warn(fnName, "guid", subaccountGuid)
 
 	path := subAccountsPath + "/" + subaccountGuid

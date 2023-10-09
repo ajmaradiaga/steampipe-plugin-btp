@@ -3,11 +3,11 @@ package btp
 import (
 	"context"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
-	"github.com/turbot/steampipe-plugin-sdk/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 type BTPService string
@@ -153,7 +153,7 @@ func (b *BTPClient) Get(ctx context.Context, service BTPService, path string, he
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
 const (
@@ -47,14 +47,13 @@ func listDataCenters(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 		return nil, err
 	}
 
-	quals := d.KeyColumnQuals
-	logger.Warn(fnName, "quals", quals)
-	region, ok := quals["region"]
+	equalQuals := d.EqualsQuals
+	logger.Warn(fnName, "d.Quals", d.Quals)
 
 	queryStrings := map[string]string{}
 
-	if ok {
-		queryStrings["region"] = region.GetStringValue()
+	if d.Quals["region"] != nil {
+		queryStrings["region"] = equalQuals["region"].GetStringValue()
 	}
 
 	path := datacentersPath
