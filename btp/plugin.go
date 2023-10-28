@@ -20,6 +20,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"btp_accounts_subaccounts":            tableBTPSubaccounts(),
 			"btp_accounts_directories":            tableBTPDirectories(),
 			"btp_entitlements_alloweddatacenters": tableBTPDatacenters(),
+			"btp_entitlements_assignments":        tableBTPGlobalAccountAssignments(),
 		},
 	}
 	return p
