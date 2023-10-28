@@ -46,3 +46,36 @@ FROM btp_accounts_subaccounts sa
     JOIN btp.btp_entitlements_alloweddatacenters dc ON sa.region = dc.region
 ORDER BY region,
     subaccount_name;
+
+SELECT DISTINCT business_category ->> 'id' bc_id
+FROM       btp_entitlements_assignments bes;
+
+SELECT DISTINCT business_category ->> 'id' bc_id
+FROM       btp_entitlements_assignments bes
+WHERE subaccount_guid = '700941ea-995f-4faa-95a4-10dcd448ad5c';
+
+-- Assignments and service plans
+SELECT     bes.display_name,
+           service_plan ->> 'name' sp_displayName,
+		   service_plan ->> 'amount' sp_amount,
+		   service_plan ->> 'remainingAmount' sp_remaining_amount
+FROM       btp_entitlements_assignments bes
+CROSS JOIN jsonb_array_elements(service_plans) service_plan
+WHERE business_category ->> 'id' = 'APPLICATION_DEVELOPMENT_AND_AUTOMATION'  
+ORDER BY bes.display_name asc
+
+-- Assignments and the data centers where they are available 
+SELECT     bes.display_name,
+           service_plan ->> 'name' sp_displayName,
+		   data_centers ->> 'name' dc_name
+FROM       btp_entitlements_assignments bes
+CROSS JOIN jsonb_array_elements(service_plans) service_plan
+CROSS JOIN jsonb_array_elements(service_plan -> 'dataCenters') data_centers
+WHERE business_category ->> 'id' = 'INTEGRATION'  
+ORDER BY bes.display_name asc
+
+SELECT * 
+FROM btp_entitlements_assignments_subaccount
+
+
+SELECT title, link, author_name FROM rss_item where feed_link = 'https://blogs.sap.com/feed/';
