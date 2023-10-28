@@ -31,10 +31,13 @@ func tableBTPDirectories() *plugin.Table {
 			{Name: "entity_state", Type: proto.ColumnType_STRING, Description: "The current state of the directory.\n* <b>STARTED:</b> CRUD operation on an entity has started.\n* <b>CREATING:</b> Creating entity operation is in progress.\n* <b>UPDATING:</b> Updating entity operation is in progress.\n* <b>MOVING:</b> Moving entity operation is in progress.\n* <b>PROCESSING:</b> A series of operations related to the entity is in progress.\n* <b>DELETING:</b> Deleting entity operation is in progress.\n* <b>OK:</b> The CRUD operation or series of operations completed successfully.\n* <b>PENDING REVIEW:</b> The processing operation has been stopped for reviewing and can be restarted by the operator.\n* <b>CANCELLED:</b> The operation or processing was canceled by the operator.\n* <b>CREATION_FAILED:</b> The creation operation failed, and the entity was not created or was created but cannot be used.\n* <b>UPDATE_FAILED:</b> The update operation failed, and the entity was not updated.\n* <b>PROCESSING_FAILED:</b> The processing operations failed.\n* <b>DELETION_FAILED:</b> The delete operation failed, and the entity was not deleted.\n* <b>MOVE_FAILED:</b> Entity could not be moved to a different location.\n* <b>MIGRATING:</b> Migrating entity from NEO to CF"},
 			{Name: "state_message", Type: proto.ColumnType_STRING, Description: "Information about the state"},
 			{Name: "directory_type", Type: proto.ColumnType_STRING},
+			{Name: "directory_features", Type: proto.ColumnType_JSON, Description: "The features of the directory"},
 			{Name: "contract_status", Type: proto.ColumnType_STRING, Description: "The status of the customer contract and its associated root global account.\n* <b>ACTIVE:</b> The customer contract and its associated global account is currently active.\n* <b>PENDING_TERMINATION:</b> A termination process has been triggered for a customer contract (the customer contract has expired, or a customer has given notification that they wish to terminate their contract), and the global account is currently in the validation period. The customer can still access their global account until the end of the validation period.\n* <b>SUSPENDED:</b> For enterprise accounts, specifies that the customer's global account is currently in the grace period of the termination process. Access to the global account by the customer is blocked. No data is deleted until the deletion date is reached at the end of the grace period. For trial accounts, specifies that the account is suspended, and the account owner has not yet extended the trial period"},
 			{Name: "consumption_based", Type: proto.ColumnType_BOOL, Description: "True if the account is consumption based"},
 			{Name: "parent_guid0", Type: proto.ColumnType_STRING, Description: "The GUID of the directory's parent entity. Typically this is the global account"},
 			{Name: "parent_guid1", Type: proto.ColumnType_STRING},
+			{Name: "custom_properties", Type: proto.ColumnType_JSON, Description: "The custom properties of the directory"},
+			{Name: "subaccounts", Type: proto.ColumnType_JSON, Description: "The subaccounts the directory"},
 		},
 	}
 }
@@ -51,8 +54,11 @@ func getDirectory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 		return nil, err
 	}
 
-	equalQuals := d.EqualsQuals
+	queryStrings := map[string]string{
+		"expand": "true",
+	}
 
+	equalQuals := d.EqualsQuals
 	logger.Warn(fnName, "d.Quals", d.Quals)
 	directoryGuid := equalQuals["guid"].GetStringValue()
 
@@ -63,7 +69,7 @@ func getDirectory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	logger.Warn(fnName, "path", path)
 
 	// Call the API
-	body, err := btpClient.Get(ctx, AccountsService, path, nil, nil)
+	body, err := btpClient.Get(ctx, AccountsService, path, nil, queryStrings)
 
 	if err != nil {
 		return nil, err

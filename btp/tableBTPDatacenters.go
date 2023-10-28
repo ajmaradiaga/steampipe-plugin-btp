@@ -30,6 +30,7 @@ func tableBTPDatacenters() *plugin.Table {
 			{Name: "provisioning_service_url", Type: proto.ColumnType_STRING, Description: "Provisioning service URL"},
 			{Name: "saas_registry_service_url", Type: proto.ColumnType_STRING, Description: "Saas-Registry service URL"},
 			{Name: "domain", Type: proto.ColumnType_STRING, Description: "The domain of the data center"},
+			{Name: "is_main_data_center", Type: proto.ColumnType_BOOL, Description: "Whether the specified datacenter is a main datacenter"},
 			{Name: "geo_access", Type: proto.ColumnType_STRING},
 		},
 	}
@@ -51,6 +52,9 @@ func listDataCenters(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	logger.Warn(fnName, "d.Quals", d.Quals)
 
 	queryStrings := map[string]string{}
+
+	// Including satellite data centers by default
+	queryStrings["includeSatelliteDataCenters"] = "true"
 
 	if d.Quals["region"] != nil {
 		queryStrings["region"] = equalQuals["region"].GetStringValue()

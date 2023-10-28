@@ -30,6 +30,7 @@ func tableBTPSubaccounts() *plugin.Table {
 			{Name: "global_account_guid", Type: proto.ColumnType_STRING, Description: "The unique ID of the subaccount's global account"},
 			{Name: "parent_guid", Type: proto.ColumnType_STRING, Description: "The GUID of the subaccount’s parent entity. If the subaccount is located directly in the global account (not in a directory), then this is the GUID of the global account"},
 			{Name: "parent_type", Type: proto.ColumnType_STRING},
+			{Name: "parent_features", Type: proto.ColumnType_JSON, Description: "The parent features of the subaccount"},
 			{Name: "region", Type: proto.ColumnType_STRING, Description: "The region in which the subaccount was created"},
 			{Name: "subdomain", Type: proto.ColumnType_STRING, Description: "The subdomain that becomes part of the path used to access the authorization tenant of the subaccount. Must be unique within the defined region. Use only letters (a-z), digits (0-9), and hyphens (not at the start or end). Maximum length is 63 characters. Cannot be changed after the subaccount has been created"},
 			{Name: "beta_enabled", Type: proto.ColumnType_BOOL, Description: "Whether the subaccount can use beta services and applications"},
@@ -40,6 +41,7 @@ func tableBTPSubaccounts() *plugin.Table {
 			{Name: "created_date", Type: proto.ColumnType_INT, Description: "The date the subaccount was created. Dates and times are in UTC format"},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "Details of the user that created the subaccount"},
 			{Name: "modified_date", Type: proto.ColumnType_INT, Description: "The date the subaccount was last modified. Dates and times are in UTC format"},
+			{Name: "custom_properties", Type: proto.ColumnType_JSON, Description: "The custom properties of the subaccount"},
 		},
 	}
 }
