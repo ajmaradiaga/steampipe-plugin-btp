@@ -1,5 +1,5 @@
 connection "btp" {
-  plugin = "btp"
+  plugin = "ajmaradiaga/btp"
 
   #########
   #  CIS  #
