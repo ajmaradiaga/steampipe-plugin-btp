@@ -12,13 +12,13 @@ type BTPConfig struct {
 	UAAClientSecret *string `cty:"uaa_clientsecret"`
 
 	// Endpoints
-	EndpointsAccountServiceUrl      *string `cty:"endpoints_accounts_service_url"`
-	EndpointsEntitlementsServiceUrl *string `cty:"endpoints_entitlements_service_url"`
+	CISAccountServiceUrl      *string `cty:"cis_accounts_service_url"`
+	CISEntitlementsServiceUrl *string `cty:"cis_entitlements_service_url"`
 
 	// Username
 	Username    *string `cty:"username"`
 	Password    *string `cty:"password"`
-	AccessToken *string `cty:"access_token"`
+	AccessToken *string `cty:"cis_access_token"`
 }
 
 var ConfigSchema = map[string]*schema.Attribute{
@@ -37,11 +37,11 @@ var ConfigSchema = map[string]*schema.Attribute{
 		Required: false,
 	},
 
-	"endpoints_accounts_service_url": {
+	"cis_accounts_service_url": {
 		Type: schema.TypeString,
 	},
 
-	"endpoints_entitlements_service_url": {
+	"cis_entitlements_service_url": {
 		Type: schema.TypeString,
 	},
 
@@ -55,7 +55,7 @@ var ConfigSchema = map[string]*schema.Attribute{
 		Required: false,
 	},
 
-	"access_token": {
+	"cis_access_token": {
 		Type:     schema.TypeString,
 		Required: false,
 	},

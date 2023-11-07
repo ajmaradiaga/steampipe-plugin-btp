@@ -12,9 +12,9 @@ const (
 	globalAccountAssignmentsPath = "/entitlements/v1/globalAccountAssignments"
 )
 
-func tableBTPGlobalAccountAssignments() *plugin.Table {
+func tableBTPEntitlementsAssignment() *plugin.Table {
 	return &plugin.Table{
-		Name:        "btp_entitlements_assignments",
+		Name:        "btp_entitlements_assignment",
 		Description: "BTP Global account assignments",
 		List: &plugin.ListConfig{
 			Hydrate: listGlobalAccountAssignments,
@@ -44,13 +44,12 @@ func listGlobalAccountAssignments(ctx context.Context, d *plugin.QueryData, h *p
 		return nil, err
 	}
 
-	equalQuals := d.EqualsQuals
 	logger.Warn(fnName, "d.Quals", d.Quals)
 
 	queryStrings := map[string]string{}
 
 	if d.Quals["subaccount_guid"] != nil {
-		queryStrings["subaccountGUID"] = equalQuals["subaccount_guid"].GetStringValue()
+		queryStrings["subaccountGUID"] = d.EqualsQualString("subaccount_guid")
 	}
 
 	path := globalAccountAssignmentsPath

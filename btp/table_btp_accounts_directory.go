@@ -12,9 +12,9 @@ const (
 	directoriesPath = "/accounts/v1/directories"
 )
 
-func tableBTPDirectories() *plugin.Table {
+func tableBTPAccountsDirectory() *plugin.Table {
 	return &plugin.Table{
-		Name:        "btp_accounts_directories",
+		Name:        "btp_accounts_directory",
 		Description: "BTP Directories",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("guid"),
@@ -58,9 +58,8 @@ func getDirectory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 		"expand": "true",
 	}
 
-	equalQuals := d.EqualsQuals
 	logger.Warn(fnName, "d.Quals", d.Quals)
-	directoryGuid := equalQuals["guid"].GetStringValue()
+	directoryGuid := d.EqualsQualString("guid")
 
 	logger.Warn(fnName, "guid", directoryGuid)
 

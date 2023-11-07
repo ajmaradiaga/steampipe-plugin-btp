@@ -63,9 +63,9 @@ func NewBTPClient(httpClient *http.Client, connection *plugin.Connection) (*BTPC
 func (b *BTPClient) getServiceURL(service BTPService) (string, error) {
 	switch service {
 	case AccountsService:
-		return *b.config.EndpointsAccountServiceUrl, nil
+		return *b.config.CISAccountServiceUrl, nil
 	case EntitlementService:
-		return *b.config.EndpointsEntitlementsServiceUrl, nil
+		return *b.config.CISEntitlementsServiceUrl, nil
 	}
 
 	return "", nil
@@ -110,7 +110,7 @@ func (b *BTPClient) includeQueryStrings(req *http.Request) {
 }
 
 func (b *BTPClient) handleAuthentication() error {
-	btpEnvironmentAccessToken := os.Getenv("BTP_ACCESS_TOKEN")
+	btpEnvironmentAccessToken := os.Getenv("BTP_CIS_ACCESS_TOKEN")
 
 	// Prioritise access token set as an environment variable
 	if btpEnvironmentAccessToken != "" {
@@ -120,7 +120,7 @@ func (b *BTPClient) handleAuthentication() error {
 	}
 
 	if btpEnvironmentAccessToken == "" {
-		return errors.New("'access_token' must be set in the connection configuration. Edit your connection configuration file or set the BTP_ACCESS_TOKEN environment variable and then restart Steampipe")
+		return errors.New("'cis_access_token' must be set in the connection configuration. Edit your connection configuration file or set the BTP_CIS_ACCESS_TOKEN environment variable and then restart Steampipe")
 	}
 
 	b.headers["Authorization"] = "Bearer " + btpEnvironmentAccessToken
