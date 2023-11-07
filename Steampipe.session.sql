@@ -1,81 +1,141 @@
+---------------------------
 -- Global account details
-SELECT guid, display_name, created_date, modified_date, entity_state, state_message, subdomain, contract_status, commercial_model, consumption_based, license_type, geo_access, renewal_date, _ctx
-	FROM btp.btp_accounts_global_account;
+---------------------------
 
+SELECT GUID,
+	DISPLAY_NAME,
+	CREATED_DATE,
+	MODIFIED_DATE,
+	ENTITY_STATE,
+	STATE_MESSAGE,
+	SUBDOMAIN,
+	CONTRACT_STATUS,
+	COMMERCIAL_MODEL,
+	CONSUMPTION_BASED
+FROM BTP.BTP_ACCOUNTS_GLOBAL_ACCOUNT;
+
+---------------------------------
 -- List all subaccounts in root
-SELECT guid, display_name, parent_guid, parent_type, subdomain
-FROM btp_accounts_subaccounts
+---------------------------------
 
+SELECT GUID,
+	DISPLAY_NAME,
+	PARENT_GUID,
+	PARENT_TYPE,
+	SUBDOMAIN,
+	CUSTOM_PROPERTIES
+FROM BTP_ACCOUNTS_SUBACCOUNT 
+
+---------------------------------------
 -- List all subaccounts in a directory
-SELECT display_name,
-    region,
-    subdomain,
-    beta_enabled
-FROM btp_accounts_subaccounts
-WHERE parent_guid = '00643708-5865-4e15-a0b4-d276c3877502'
-ORDER BY region,
-    display_name;
+---------------------------------------
 
+SELECT DISPLAY_NAME,
+	REGION,
+	SUBDOMAIN,
+	BETA_ENABLED
+FROM BTP_ACCOUNTS_SUBACCOUNT
+WHERE PARENT_GUID = '00643708-5865-4e15-a0b4-d276c3877502'
+ORDER BY REGION,
+	DISPLAY_NAME;
+
+---------------------------------
 -- List all directories
-SELECT DISTINCT parent_guid,
-    parent_type
-FROM btp_accounts_subaccounts
-WHERE parent_type = 'PROJECT';
+---------------------------------
 
+SELECT DISTINCT PARENT_GUID,
+	PARENT_TYPE
+FROM BTP_ACCOUNTS_SUBACCOUNT
+WHERE PARENT_TYPE = 'PROJECT';
+
+---------------------------------
 -- Count subaccounts by region
-SELECT region,
-    count(1)
-FROM btp_accounts_subaccounts
-GROUP BY region
-ORDER BY count DESC;
+---------------------------------
 
+SELECT REGION,
+	COUNT(1)
+FROM BTP_ACCOUNTS_SUBACCOUNT
+GROUP BY REGION
+ORDER BY COUNT DESC;
+
+---------------------------------------------------
 -- Subaccount details with datacenter information
-SELECT sa.guid subaccount_guid,
-    sa.display_name subaccount_name,
-    sa.subdomain subaccount_subdomain,
-    dc.name dc_name,
-    dc.display_name as dc_location,
-    sa.region,
-    environment,
-    iaas_provider,
-    supports_trial,
-    saas_registry_service_url,
-    domain,
-    geo_access
-FROM btp_accounts_subaccounts sa
-    JOIN btp.btp_entitlements_alloweddatacenters dc ON sa.region = dc.region
-ORDER BY region,
-    subaccount_name;
+---------------------------------------------------
 
-SELECT DISTINCT business_category ->> 'id' bc_id
-FROM       btp_entitlements_assignments bes;
+SELECT SA.GUID SUBACCOUNT_GUID,
+	SA.DISPLAY_NAME SUBACCOUNT_NAME,
+	SA.SUBDOMAIN SUBACCOUNT_SUBDOMAIN,
+	DC.NAME DC_NAME,
+	DC.DISPLAY_NAME AS DC_LOCATION,
+	SA.REGION,
+	ENVIRONMENT,
+	DC.IAAS_PROVIDER,
+	SUPPORTS_TRIAL,
+	SAAS_REGISTRY_SERVICE_URL,
+	DOMAIN,
+	GEO_ACCESS
+FROM BTP_ACCOUNTS_SUBACCOUNT SA
+JOIN BTP.BTP_ENTITLEMENTS_DATACENTER DC ON SA.REGION = DC.REGION
+ORDER BY REGION,
+	SUBACCOUNT_NAME;
 
-SELECT DISTINCT business_category ->> 'id' bc_id
-FROM       btp_entitlements_assignments bes
-WHERE subaccount_guid = '700941ea-995f-4faa-95a4-10dcd448ad5c';
+----------------------------------------------
+-- Get the business category of all services
+----------------------------------------------
 
--- Assignments and service plans
-SELECT     bes.display_name,
-           service_plan ->> 'name' sp_displayName,
-		   service_plan ->> 'amount' sp_amount,
-		   service_plan ->> 'remainingAmount' sp_remaining_amount
-FROM       btp_entitlements_assignments bes
-CROSS JOIN jsonb_array_elements(service_plans) service_plan
-WHERE business_category ->> 'id' = 'APPLICATION_DEVELOPMENT_AND_AUTOMATION'  
-ORDER BY bes.display_name asc
+SELECT DISTINCT BUSINESS_CATEGORY ->> 'id' BC_ID
+FROM BTP_ENTITLEMENTS_ASSIGNMENT BES;
 
--- Assignments and the data centers where they are available 
-SELECT     bes.display_name,
-           service_plan ->> 'name' sp_displayName,
-		   data_centers ->> 'name' dc_name
-FROM       btp_entitlements_assignments bes
-CROSS JOIN jsonb_array_elements(service_plans) service_plan
-CROSS JOIN jsonb_array_elements(service_plan -> 'dataCenters') data_centers
-WHERE business_category ->> 'id' = 'INTEGRATION'  
-ORDER BY bes.display_name asc
+---------------------------------------------------
+-- Nested JSON structures in the Entitlements API
+---------------------------------------------------
 
-SELECT * 
-FROM btp_entitlements_assignments_subaccount
+SELECT BES.DISPLAY_NAME,
+	SERVICE_PLANS
+FROM BTP_ENTITLEMENTS_ASSIGNMENT BES 
+
+-------------------------------------------------------------
+-- Assignments and quota for a particular business category
+-------------------------------------------------------------
+
+SELECT BES.DISPLAY_NAME,
+	SERVICE_PLAN ->> 'name' SP_DISPLAYNAME,
+	SERVICE_PLAN ->> 'amount' SP_AMOUNT,
+	SERVICE_PLAN ->> 'remainingAmount' SP_REMAINING_AMOUNT
+FROM BTP_ENTITLEMENTS_ASSIGNMENT BES
+CROSS JOIN JSONB_ARRAY_ELEMENTS(SERVICE_PLANS) SERVICE_PLAN
+WHERE BUSINESS_CATEGORY ->> 'id' = 'AI'
+ORDER BY BES.DISPLAY_NAME ASC;
+
+------------------------------------------------------------------
+-- Assignments and the data centers where they are available
+------------------------------------------------------------------
+
+SELECT BES.DISPLAY_NAME,
+	SERVICE_PLAN ->> 'name' SP_DISPLAYNAME,
+	DATA_CENTERS ->> 'name' DC_NAME
+FROM BTP_ENTITLEMENTS_ASSIGNMENT BES
+CROSS JOIN JSONB_ARRAY_ELEMENTS(SERVICE_PLANS) SERVICE_PLAN
+CROSS JOIN JSONB_ARRAY_ELEMENTS(SERVICE_PLAN -> 'dataCenters') DATA_CENTERS
+WHERE BUSINESS_CATEGORY ->> 'id' = 'INTEGRATION'
+	AND DATA_CENTERS ->> 'name' = 'cf-eu10'
+ORDER BY BES.DISPLAY_NAME ASC
 
 
-SELECT title, link, author_name FROM rss_item where feed_link = 'https://blogs.sap.com/feed/';
+------------------------------------------------------------------
+-- Have multiple BTP Global accounts?
+------------------------------------------------------------------
+
+SELECT glob.display_name "Global Account", sub.REGION,
+	COUNT(1)
+FROM BTP.BTP_ACCOUNTS_SUBACCOUNT sub
+JOIN BTP.BTP_ACCOUNTS_GLOBAL_ACCOUNT glob ON sub.global_account_guid = glob.guid
+GROUP BY glob.display_name, sub.REGION
+UNION
+SELECT glob.display_name "Global Account", sub.REGION,
+	COUNT(1)
+FROM BTP_TRIAL.BTP_ACCOUNTS_SUBACCOUNT sub
+JOIN BTP_TRIAL.BTP_ACCOUNTS_GLOBAL_ACCOUNT glob ON sub.global_account_guid = glob.guid
+GROUP BY glob.display_name, sub.REGION
+ORDER BY COUNT DESC, region asc;
+
