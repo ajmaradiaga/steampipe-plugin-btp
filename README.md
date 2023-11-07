@@ -1,106 +1,126 @@
-# Steampipe plugin for SAP BTP
+# SAP BTP plugin for Steampipe
 
-> ⚠️ This plugin is a proof of concept and is in no way supported by SAP.
+Use SQL to query your SAP BTP account details.
 
-Using this plugin will allow you to use SQL to query your SAP BTP account. As this is a PoC, the plugin only supports a subset of the APIs available in [SAP BTP Core Services](https://api.sap.com/package/SAPCloudPlatformCoreServices/rest), e.g. querying Global Accounts, Subaccounts and Directories. In the future, I plan to expand its capabilities and include the Entitlements, Events, Provisioning, and Resource consumption services that are part of the [SAP BTP Core Services](https://api.sap.com/package/SAPCloudPlatformCoreServices/rest).
+- **[Get started →](https://hub.steampipe.io/plugins/ajmaradiaga/btp)**
+- Documentation: [Table definitions & examples](https://hub.steampipe.io/plugins/ajmaradiaga/btp/tables)
+- Get involved: [Issues](https://github.com/ajmaradiaga/steampipe-plugin-btp/issues)
 
-![Steampipe plugin for SAP BTP](./assets/demo.gif)
+## Quick start
+
+### Install
+
+Download and install the latest SAP BTP plugin:
+
+```bash
+steampipe plugin install btp
+```
+
+Configure your [credentials](https://hub.steampipe.io/plugins/ajmaradiaga/btp#credentials) and [config file](https://hub.steampipe.io/plugins/ajmaradiaga/btp#configuration).
+
+Configure your account details in `~/.steampipe/config/btp.spc`:
+
+```hcl
+connection "btp" {
+  plugin = "ajmaradiaga/btp"
+
+  #########
+  #  CIS  #
+  #########
+
+  # You will need to create a service key for the Cloud Management Service. You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis.
+
+  # URL of the Accounts Service. Required.
+  # This can also be set via the `BTP_CIS_ACCOUNTS_SERVICE_URL` environment variable.
+  cis_accounts_service_url = "https://accounts-service.cfapps.[region].hana.ondemand.com"
+  
+  # URL of the Entitlements Service. Required.
+  # This can also be set via the `BTP_CIS_ENTITLEMENTS_SERVICE_URL` environment variable.
+  cis_entitlements_service_url = "https://entitlements-service.cfapps.[region].hana.ondemand.com"
+
+  # Access token to communicate with the Cloud Management Service APIs. Required.
+  # This can also be set via the `BTP_CIS_ACCESS_TOKEN` environment variable.
+  cis_access_token = "eyJhbGciOiDBNsO0JxFoAaodkDJ3Pmk7cFEsEr5ml5BwNWEafrEjy8Hsxt2mVACpD8B4AIPpRuMoGE71qXGoPcW0vCugceTwN4C3xM8qYmH7D"
+ 
+}
+```
+
+Or through environment variables:
+
+```sh
+export BTP_CIS_ACCOUNTS_SERVICE_URL=https://accounts-service.cfapps.eu10.hana.ondemand.com
+export BTP_CIS_ENTITLEMENTS_SERVICE_URL=https://entitlements-service.cfapps.eu10.hana.ondemand.com
+export BTP_CIS_ACCESS_TOKEN=eyJhbGciOiDBNsO0JxFoAaodkDJ3Pmk7cFEsEr5ml5BwNWEafrEjy8Hsxt2mVACpD8B4AIPpRuMoGE71qXGoPcW0vCugceTwN4C3xM8qYmH7DLQ
+```
+
+Run steampipe:
+
+```shell
+steampipe query
+```
+
+List your SAP BTP Global account details:
 
 ```sql
--- Apply filter in your queries, e.g. retrieve all subaccounts in a specific region.
-select guid, display_name, region 
-from btp_trial.btp_accounts_subaccounts 
-where region = 'ap21'
-```
-```txt
-+--------------------------------------+------------------+--------+
-| guid                                 | display_name     | region |
-+--------------------------------------+------------------+--------+
-| 4e923803-c32b-4cb6-b008-738892b7cd8f | subaccount_under | ap21   |
-| a6285f10-2dae-4318-b2c6-2075f2fcc3f3 | subaccount_2     | ap21   |
-+--------------------------------------+------------------+--------+
-```
-```sql
--- Count all subaccounts per region
-select region, count(1) as total
-from btp_trial.btp_accounts_subaccounts
-group by region 
-order by total desc
-```
-```txt
-+--------+-------+
-| region | total |
-+--------+-------+
-| ap21   | 2     |
-| us10   | 1     |
-+--------+-------+
+SELECT GUID,
+	DISPLAY_NAME,
+	CREATED_DATE,
+	MODIFIED_DATE
+FROM BTP.BTP_ACCOUNTS_GLOBAL_ACCOUNT;
 ```
 
-To query our SAP BTP account we need to install Steampipe and the SAP BTP plugin locally. Also, the plugin requires an access token to consume the SAP BTP Core Services API.
-
-## Install Steampipe
-
-```bash
-$ brew install turbot/tap/steampipe
-$ steampipe plugin install steampipe
-
-# Validate installation is working fine
-$ steampipe query "select name from steampipe_registry_plugin;"
-
+```
++--------------------------------------+-----------------------+---------------+---------------+
+| guid                                 | display_name          | created_date  | modified_date |
++--------------------------------------+-----------------------+---------------+---------------+
+| 010788v8-7s64-1801-6680-l6g2253646b2 | My BTP global account | 1638221010619 | 1693587625761 |
++--------------------------------------+-----------------------+---------------+---------------+
 ```
 
-## SAP BTP Access Token
+## Developing
 
-You can set the access token in the plugin config file, e.g. `~/.steampipe/config/btp.spc` or set it as an environment variable. Below I'm using the great [`generate-password-grant-type` script](https://github.com/SAP-samples/cloud-btp-cli-api-codejam/blob/main/scripts/generate-password-grant-type) (created by my friend and colleague [@qmacro](https://github.com/qmacro)) to retrieve an access token. The script expects a Cloud Management Service instance service key. Meaning, you will need to create an instance of this service and then a service key in the SAP BTP Cockpit. 
+Prerequisites:
 
-```bash
-export BTP_ACCESS_TOKEN=$(./generate-password-grant-type cis-central-trial-sk | jq -r .access_token)
+- [Steampipe](https://steampipe.io/downloads)
+- [Golang](https://golang.org/doc/install)
+
+Clone:
+
+```sh
+git clone https://github.com/ajmaradiaga/steampipe-plugin-btp.git
+cd steampipe-plugin-btp
 ```
 
-## Install the SAP BTP plugin
-
-```bash
-# Go to the directory where you've cloned this repo
-$ cd repos/steampipe-plugin-btp
-
-# Copy the sample configuration to the steampipe config folder
-$ cp btp/config/btp.spc.sample ~/.steampipe/config/btp.spc
-
-# Runs the command in Makefile and places the plugin in the 
-# steampipe plugins folder, e.g. ~/.steampipe/plugins/local/btp
-$ make
-
-# Query your SAP BTP account
-$ steampipe query "select * from btp_accounts_global_account"
+Build, which automatically installs the new version to your `~/.steampipe/plugins` directory:
 
 ```
-
-Below, the tree structure of .steampipe after you've installed the plugin and copied the sample configuration.
-
-```
-~/.steampipe/
-├── config
-│   ├── ...
-│   ├── btp.spc
-├── db
-│   ......
-└── plugins
-    ├── hub.steampipe.io
-    │   └── plugins
-    │       └── turbot
-    ├── local
-    │   └── btp
-    │       └── btp.plugin
+make
 ```
 
-## Troubleshooting
+Configure the plugin:
 
-If facing any issues when running the project, we can set the steampipe log level and check the logs located in `~/.steampipe/logs`.
-
-```bash
-# Set steampipe log level
-$ export STEAMPIPE_LOG_LEVEL=LEVEL=WARN
-
-$ tail -f ~/.steampipe/logs/plugin-2023-03-07.log
+```
+cp config/* ~/.steampipe/config
+vi ~/.steampipe/config/btp.spc
 ```
 
+Try it!
+
+```
+steampipe query
+> .inspect btp
+```
+
+Further reading:
+
+- [Writing plugins](https://steampipe.io/docs/develop/writing-plugins)
+- [Writing your first table](https://steampipe.io/docs/develop/writing-your-first-table)
+
+## Contributing
+
+Please see the [contribution guidelines](https://github.com/ajmaradiaga/steampipe-plugin-btp/blob/main/CONTRIBUTING.md) and our [code of conduct](https://github.com/ajmaradiaga/steampipe-plugin-btp/blob/main/CODE_OF_CONDUCT.md). All contributions are subject to the [Apache 2.0 open source license](https://github.com/ajmaradiaga/steampipe-plugin-btp/blob/main/LICENSE).
+
+`help wanted` issues:
+
+- [Steampipe](https://github.com/turbot/steampipe/labels/help%20wanted)
+- [SAP BTP Plugin](https://github.com/ajmaradiaga/steampipe-plugin-btp/labels/help%20wanted)
