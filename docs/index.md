@@ -36,7 +36,7 @@ FROM BTP.BTP_ACCOUNTS_GLOBAL_ACCOUNT;
 
 ## Documentation
 
-- **[Table definitions & examples →](/TBD)**
+- **[Table definitions & examples →](/plugins/ajmaradiaga/btp/tables)**
 
 ## Quick start
 
