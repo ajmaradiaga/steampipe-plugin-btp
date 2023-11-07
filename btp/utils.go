@@ -63,8 +63,22 @@ func NewBTPClient(httpClient *http.Client, connection *plugin.Connection) (*BTPC
 func (b *BTPClient) getServiceURL(service BTPService) (string, error) {
 	switch service {
 	case AccountsService:
+		btpEnvironmentVariable := os.Getenv("BTP_CIS_ACCOUNTS_SERVICE_URL")
+
+		// Prioritise environment variable
+		if btpEnvironmentVariable != "" {
+			return btpEnvironmentVariable, nil
+		}
+
 		return *b.config.CISAccountServiceUrl, nil
 	case EntitlementService:
+		btpEnvironmentVariable := os.Getenv("BTP_CIS_ENTITLEMENTS_SERVICE_URL")
+
+		// Prioritise environment variable
+		if btpEnvironmentVariable != "" {
+			return btpEnvironmentVariable, nil
+		}
+
 		return *b.config.CISEntitlementsServiceUrl, nil
 	}
 
