@@ -1,18 +1,18 @@
 ---
-organization: Turbot
-category: ["internet"]
+organization: ajmaradiaga
+category: ["public cloud"]
 icon_url: "/images/plugins/sap/btp.svg"
-brand_color: "#FE5803"
+brand_color: "#009FDD"
 display_name: "SAP BTP"
 short_name: "btp"
-description: "Steampipe plugin to query the account details of your SAP BTP."
-og_description: "Query Namecheap with SQL! Open source CLI. No DB required."
-og_image: "/images/plugins/turbot/namecheap-social-graphic.png"
+description: "Steampipe plugin to query the account details of your SAP BTP account."
+og_description: "Query SAP BTP with SQL! Open source CLI. No DB required."
+og_image: "/images/plugins/ajmaradiaga/sap-btp-graphic.png"
 ---
 
-# Namecheap + Steampipe
+# SAP BTP + Steampipe
 
-[Namecheap](https://namecheap.com) is a domain name registrar and web hosting company
+[SAP BTP](https://www.sap.com/products/technology-platform.html) brings together data and analytics, artificial intelligence, application development, automation, and integration in one, unified environment.
 
 [Steampipe](https://steampipe.io) is an open source CLI to instantly query cloud APIs using SQL.
 
@@ -30,7 +30,7 @@ FROM BTP.BTP_ACCOUNTS_GLOBAL_ACCOUNT;
 +--------------------------------------+-----------------------+---------------+---------------+
 | guid                                 | display_name          | created_date  | modified_date |
 +--------------------------------------+-----------------------+---------------+---------------+
-| 010788v8-7s64-1801-6680-l6g2253646b2 | My BTP global account | 1638222410619 | 1697487625761 |
+| 010788v8-7s64-1801-6680-l6g2253646b2 | My BTP global account | 1638221010619 | 1693587625761 |
 +--------------------------------------+-----------------------+---------------+---------------+
 ```
 
