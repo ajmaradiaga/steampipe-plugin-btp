@@ -1,6 +1,6 @@
 module github.com/ajmaradiaga/steampipe-plugin-btp
 
-go 1.20
+go 1.21
 
 require github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
 
