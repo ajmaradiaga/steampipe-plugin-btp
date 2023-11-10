@@ -1,11 +1,11 @@
 ---
 organization: ajmaradiaga
 category: ["public cloud"]
-icon_url: "/images/plugins/sap/btp.svg"
+icon_url: "/images/plugins/ajmaradiaga/btp.svg"
 brand_color: "#009FDD"
 display_name: "SAP BTP"
 short_name: "btp"
-description: "Steampipe plugin to query the account details of your SAP BTP account."
+description: "Steampipe plugin to query the account details of your SAP Business Technology Platform account."
 og_description: "Query SAP BTP with SQL! Open source CLI. No DB required."
 og_image: "/images/plugins/ajmaradiaga/sap-btp-graphic.png"
 ---
