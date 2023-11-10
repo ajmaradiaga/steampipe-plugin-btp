@@ -3,6 +3,7 @@ package btp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -45,6 +46,7 @@ func listDataCenters(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 
 	btpClient, err := NewBTPClient(nil, d.Connection)
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
 		return nil, err
 	}
 
@@ -67,6 +69,7 @@ func listDataCenters(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	body, err := btpClient.Get(ctx, EntitlementService, path, nil, queryStrings)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
@@ -81,6 +84,7 @@ func listDataCenters(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	logger.Warn(fnName, "err", err)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 

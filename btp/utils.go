@@ -89,7 +89,7 @@ func (b *BTPClient) getServiceURL(service BTPService) (string, error) {
 func (b *BTPClient) prepareRequest(ctx context.Context, req *http.Request, headers map[string]string, queryStrings map[string]string) *http.Request {
 	out := req.WithContext(ctx)
 
-	b.handleAuthentication()
+	b.handleAuthentication(ctx)
 
 	for key, value := range headers {
 		b.headers[key] = value
@@ -123,7 +123,7 @@ func (b *BTPClient) includeQueryStrings(req *http.Request) {
 	req.URL.RawQuery = q.Encode()
 }
 
-func (b *BTPClient) handleAuthentication() error {
+func (b *BTPClient) handleAuthentication(ctx context.Context) error {
 	btpEnvironmentAccessToken := os.Getenv("BTP_CIS_ACCESS_TOKEN")
 
 	// Prioritise access token set as an environment variable
@@ -134,7 +134,10 @@ func (b *BTPClient) handleAuthentication() error {
 	}
 
 	if btpEnvironmentAccessToken == "" {
-		return errors.New("'cis_access_token' must be set in the connection configuration. Edit your connection configuration file or set the BTP_CIS_ACCESS_TOKEN environment variable and then restart Steampipe")
+		err := errors.New("'cis_access_token' must be set in the connection configuration. Edit your connection configuration file or set the BTP_CIS_ACCESS_TOKEN environment variable and then restart Steampipe")
+		plugin.Logger(ctx).Error("BTPClient.handleAuthentication", "configuration_error", err)
+
+		return err
 	}
 
 	b.headers["Authorization"] = "Bearer " + btpEnvironmentAccessToken
@@ -154,6 +157,7 @@ func (b *BTPClient) Get(ctx context.Context, service BTPService, path string, he
 
 	req, err := http.NewRequest(http.MethodGet, baseURL+path, nil)
 	if err != nil {
+		plugin.Logger(ctx).Error("BTPClient.Get", "connection_error", err)
 		return nil, err
 	}
 
@@ -163,16 +167,19 @@ func (b *BTPClient) Get(ctx context.Context, service BTPService, path string, he
 
 	resp, err := b.httpClient.Do(req)
 	if err != nil {
+		plugin.Logger(ctx).Error("BTPClient.Get", "connection_error", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		plugin.Logger(ctx).Error("BTPClient.Get", "connection_error", err)
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		plugin.Logger(ctx).Error("BTPClient.Get", "api_error", err)
 		return nil, Error{
 			body: body,
 			resp: resp,

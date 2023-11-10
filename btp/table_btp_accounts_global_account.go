@@ -3,6 +3,7 @@ package btp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -40,12 +41,15 @@ func tableBTPAccountsGlobalAccount() *plugin.Table {
 
 func getGlobalAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
+	fnName := "getGlobalAccount"
+
 	logger := plugin.Logger(ctx)
 	logger.Trace("Hydrating Global Account")
 
 	btpClient, err := NewBTPClient(nil, d.Connection)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
 		return nil, err
 	}
 
@@ -54,14 +58,11 @@ func getGlobalAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 		"expand":                "true",
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
 	// Call the API
 	body, err := btpClient.Get(ctx, AccountsService, globalAccountsPath, nil, queryStrings)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
@@ -74,6 +75,7 @@ func getGlobalAccount(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrat
 	logger.Debug("getGlobalAccount", "err", err)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 

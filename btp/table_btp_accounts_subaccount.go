@@ -3,6 +3,7 @@ package btp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -48,12 +49,15 @@ func tableBTPAccountsSubaccount() *plugin.Table {
 
 func listSubaccounts(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
+	fnName := "listSubaccounts"
+
 	logger := plugin.Logger(ctx)
 	logger.Trace("Hydrating list subaccounts")
 
 	// conn, err := connect(ctx, d)
 	btpClient, err := NewBTPClient(nil, d.Connection)
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
 		return nil, err
 	}
 
@@ -61,6 +65,7 @@ func listSubaccounts(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	body, err := btpClient.Get(ctx, AccountsService, subAccountsPath, nil, nil)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
@@ -75,6 +80,7 @@ func listSubaccounts(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	logger.Debug("listAccount", "err", err)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
