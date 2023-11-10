@@ -3,6 +3,7 @@ package btp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -12,12 +13,12 @@ const (
 	globalAccountsPath = "/accounts/v1/globalAccount"
 )
 
-func tableBTPGlobalAccount() *plugin.Table {
+func tableBTPAccountsGlobalAccount() *plugin.Table {
 	return &plugin.Table{
 		Name:        "btp_accounts_global_account",
 		Description: "BTP Global Account details",
 		List: &plugin.ListConfig{
-			Hydrate: listAccount,
+			Hydrate: getGlobalAccount,
 		},
 		Columns: []*plugin.Column{
 			{Name: "guid", Type: proto.ColumnType_STRING, Description: "The unique ID of the global account"},
@@ -38,7 +39,9 @@ func tableBTPGlobalAccount() *plugin.Table {
 	}
 }
 
-func listAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func getGlobalAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+
+	fnName := "getGlobalAccount"
 
 	logger := plugin.Logger(ctx)
 	logger.Trace("Hydrating Global Account")
@@ -46,6 +49,7 @@ func listAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	btpClient, err := NewBTPClient(nil, d.Connection)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
 		return nil, err
 	}
 
@@ -54,14 +58,11 @@ func listAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 		"expand":                "true",
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
 	// Call the API
 	body, err := btpClient.Get(ctx, AccountsService, globalAccountsPath, nil, queryStrings)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
@@ -70,10 +71,11 @@ func listAccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData
 	// Convert JSON response to structure
 	err = json.Unmarshal(body, &data)
 
-	logger.Debug("listAccount", "data", data)
-	logger.Debug("listAccount", "err", err)
+	logger.Debug("getGlobalAccount", "data", data)
+	logger.Debug("getGlobalAccount", "err", err)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 

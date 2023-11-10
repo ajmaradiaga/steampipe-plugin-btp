@@ -1,2 +1,2 @@
 install:
-	go build -o ~/.steampipe/plugins/local/btp/btp.plugin *.go
+	go build -o ~/.steampipe/plugins/hub.steampipe.io/plugins/ajmaradiaga/btp@latest/steampipe-plugin-btp.plugin *.go

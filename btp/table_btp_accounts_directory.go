@@ -3,6 +3,7 @@ package btp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -12,9 +13,9 @@ const (
 	directoriesPath = "/accounts/v1/directories"
 )
 
-func tableBTPDirectories() *plugin.Table {
+func tableBTPAccountsDirectory() *plugin.Table {
 	return &plugin.Table{
-		Name:        "btp_accounts_directories",
+		Name:        "btp_accounts_directory",
 		Description: "BTP Directories",
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("guid"),
@@ -35,7 +36,7 @@ func tableBTPDirectories() *plugin.Table {
 			{Name: "contract_status", Type: proto.ColumnType_STRING, Description: "The status of the customer contract and its associated root global account.\n* <b>ACTIVE:</b> The customer contract and its associated global account is currently active.\n* <b>PENDING_TERMINATION:</b> A termination process has been triggered for a customer contract (the customer contract has expired, or a customer has given notification that they wish to terminate their contract), and the global account is currently in the validation period. The customer can still access their global account until the end of the validation period.\n* <b>SUSPENDED:</b> For enterprise accounts, specifies that the customer's global account is currently in the grace period of the termination process. Access to the global account by the customer is blocked. No data is deleted until the deletion date is reached at the end of the grace period. For trial accounts, specifies that the account is suspended, and the account owner has not yet extended the trial period"},
 			{Name: "consumption_based", Type: proto.ColumnType_BOOL, Description: "True if the account is consumption based"},
 			{Name: "parent_guid0", Type: proto.ColumnType_STRING, Description: "The GUID of the directory's parent entity. Typically this is the global account"},
-			{Name: "parent_guid1", Type: proto.ColumnType_STRING},
+			{Name: "parent_guid1", Type: proto.ColumnType_STRING, Description: "The GUID1 of the directory's parent entity. Typically this is the global account"},
 			{Name: "custom_properties", Type: proto.ColumnType_JSON, Description: "The custom properties of the directory"},
 			{Name: "subaccounts", Type: proto.ColumnType_JSON, Description: "The subaccounts the directory"},
 		},
@@ -51,6 +52,7 @@ func getDirectory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 
 	btpClient, err := NewBTPClient(nil, d.Connection)
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
 		return nil, err
 	}
 
@@ -58,9 +60,8 @@ func getDirectory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 		"expand": "true",
 	}
 
-	equalQuals := d.EqualsQuals
 	logger.Warn(fnName, "d.Quals", d.Quals)
-	directoryGuid := equalQuals["guid"].GetStringValue()
+	directoryGuid := d.EqualsQualString("guid")
 
 	logger.Warn(fnName, "guid", directoryGuid)
 
@@ -72,6 +73,7 @@ func getDirectory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	body, err := btpClient.Get(ctx, AccountsService, path, nil, queryStrings)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
@@ -84,6 +86,7 @@ func getDirectory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 	logger.Warn(fnName, "err", err)
 
 	if err != nil {
+		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
