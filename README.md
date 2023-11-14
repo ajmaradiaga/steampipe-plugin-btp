@@ -62,11 +62,13 @@ steampipe query
 List your SAP BTP Global account details:
 
 ```sql
-select guid,
-	display_name,
-	created_date,
-	modified_date
-from btp.btp_accounts_global_account;
+select
+   guid,
+   display_name,
+   created_date,
+   modified_date 
+from
+   btp.btp_accounts_global_account;
 ```
 
 ```
