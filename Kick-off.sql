@@ -1,38 +1,46 @@
-SELECT 'Show me the money!' as kick_off;
-
+select
+  'Show me the money!' as kick_off;
+  
 ---------------------------------
 -- List all subaccounts in root
 ---------------------------------
-SELECT GUID,
-	DISPLAY_NAME,
-	PARENT_GUID,
-	PARENT_TYPE,
-	SUBDOMAIN,
-	CUSTOM_PROPERTIES
-FROM BTP_ACCOUNTS_SUBACCOUNT;
+select
+  guid,
+  display_name,
+  parent_guid,
+  parent_type,
+  subdomain,
+  custom_properties 
+from
+  btp_accounts_subaccount;
 
 ---------------------------------
 -- Filter subaccounts by label
 ---------------------------------
-
-SELECT GUID,
-	DISPLAY_NAME,
-	PARENT_GUID,
-	PARENT_TYPE,
-	SUBDOMAIN,
-	CUSTOM_PROPERTIES
-FROM BTP_ACCOUNTS_SUBACCOUNT
-CROSS JOIN JSONB_ARRAY_ELEMENTS(CUSTOM_PROPERTIES) CP
-WHERE CP ->> 'key' = 'viewer' and CP ->> 'value' = 'DJ Adams'
-
+select
+  guid,
+  display_name,
+  parent_guid,
+  parent_type,
+  subdomain,
+  custom_properties 
+from
+  btp_accounts_subaccount
+  cross join
+    jsonb_array_elements(custom_properties) cp 
+where
+  cp ->> 'key' = 'label1' 
+  and cp ->> 'value' = 'value1';
+  
 ------------------------------------------------------
 -- What about if you have more than one account?
 ------------------------------------------------------
-
-SELECT GUID,
-	DISPLAY_NAME,
-	PARENT_GUID,
-	PARENT_TYPE,
-	SUBDOMAIN,
-	CUSTOM_PROPERTIES
-FROM BTP_TRIAL.BTP_ACCOUNTS_SUBACCOUNT
+select
+  guid,
+  display_name,
+  parent_guid,
+  parent_type,
+  subdomain,
+  custom_properties 
+from
+  btp_trial.btp_accounts_subaccount;
