@@ -19,11 +19,11 @@ og_image: "/images/plugins/ajmaradiaga/sap-btp-graphic.png"
 List your SAP BTP Global account details:
 
 ```sql
-SELECT GUID,
-	DISPLAY_NAME,
-	CREATED_DATE,
-	MODIFIED_DATE
-FROM BTP.BTP_ACCOUNTS_GLOBAL_ACCOUNT;
+select guid,
+	display_name,
+	created_date,
+	modified_date
+from btp.btp_accounts_global_account;
 ```
 
 ```

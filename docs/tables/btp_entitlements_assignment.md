@@ -7,41 +7,41 @@ Get the details of all the service assignments available to the SAP BTP global a
 ### Get the business category of all services
 
 ```sql
-SELECT DISTINCT BUSINESS_CATEGORY ->> 'id' BC_ID
-FROM BTP_ENTITLEMENTS_ASSIGNMENT BES;
+select distinct business_category ->> 'id' bc_id
+from btp_entitlements_assignment bes;
 ```
 
 ### Nested JSON structures in the Entitlements API
 
 ```sql
-SELECT BES.DISPLAY_NAME,
-	SERVICE_PLANS
-FROM BTP_ENTITLEMENTS_ASSIGNMENT BES 
+select bes.display_name,
+	service_plans
+from btp_entitlements_assignment bes 
 ```
 
 ### Assignments and quota for a particular business category
 
 ```sql
-SELECT BES.DISPLAY_NAME,
-	SERVICE_PLAN ->> 'name' SP_DISPLAYNAME,
-	SERVICE_PLAN ->> 'amount' SP_AMOUNT,
-	SERVICE_PLAN ->> 'remainingAmount' SP_REMAINING_AMOUNT
-FROM BTP_ENTITLEMENTS_ASSIGNMENT BES
-CROSS JOIN JSONB_ARRAY_ELEMENTS(SERVICE_PLANS) SERVICE_PLAN
-WHERE BUSINESS_CATEGORY ->> 'id' = 'AI'
-ORDER BY BES.DISPLAY_NAME ASC;
+select bes.display_name,
+	service_plan ->> 'name' sp_displayname,
+	service_plan ->> 'amount' sp_amount,
+	service_plan ->> 'remainingamount' sp_remaining_amount
+from btp_entitlements_assignment bes
+cross join jsonb_array_elements(service_plans) service_plan
+where business_category ->> 'id' = 'AI'
+order by bes.display_name asc;
 ```
 
 ### Assignments and the data centers where they are available
 
 ```sql
-SELECT BES.DISPLAY_NAME,
-	SERVICE_PLAN ->> 'name' SP_DISPLAYNAME,
-	DATA_CENTERS ->> 'name' DC_NAME
-FROM BTP_ENTITLEMENTS_ASSIGNMENT BES
-CROSS JOIN JSONB_ARRAY_ELEMENTS(SERVICE_PLANS) SERVICE_PLAN
-CROSS JOIN JSONB_ARRAY_ELEMENTS(SERVICE_PLAN -> 'dataCenters') DATA_CENTERS
-WHERE BUSINESS_CATEGORY ->> 'id' = 'INTEGRATION'
-	AND DATA_CENTERS ->> 'name' = 'cf-eu10'
-ORDER BY BES.DISPLAY_NAME ASC
+select bes.display_name,
+	service_plan ->> 'name' sp_displayname,
+	data_centers ->> 'name' dc_name
+from btp_entitlements_assignment bes
+cross join jsonb_array_elements(service_plans) service_plan
+cross join jsonb_array_elements(service_plan -> 'datacenters') data_centers
+where business_category ->> 'id' = 'INTEGRATION'
+	and data_centers ->> 'name' = 'cf-eu10'
+order by bes.display_name asc
 ```

@@ -7,43 +7,43 @@ Get the details of all the data centers where a subaccount can be created in the
 ### List all the allowed data centers
 
 ```sql
-SELECT * 
-FROM BTP.BTP_ENTITLEMENTS_DATACENTER;
+select * 
+from btp.btp_entitlements_datacenter;
 ```
 
 ### List all the Cloud Foundry data centers
 
 ```sql
-SELECT * 
-FROM BTP.BTP_ENTITLEMENTS_DATACENTER
+select * 
+from btp.btp_entitlements_datacenter
 WHERE environment = 'cloudfoundry';
 ```
 
 ### List all the satellite data centers
 
 ```sql
-SELECT * 
-FROM BTP.BTP_ENTITLEMENTS_DATACENTER
-WHERE is_main_data_center = False;
+select * 
+from btp.btp_entitlements_datacenter
+where is_main_data_center = False;
 ```
 
 ### Subaccount details with datacenter information
 
 ```sql
-SELECT SA.GUID SUBACCOUNT_GUID,
-	SA.DISPLAY_NAME SUBACCOUNT_NAME,
-	SA.SUBDOMAIN SUBACCOUNT_SUBDOMAIN,
-	DC.NAME DC_NAME,
-	DC.DISPLAY_NAME AS DC_LOCATION,
-	SA.REGION,
-	ENVIRONMENT,
-	DC.IAAS_PROVIDER,
-	SUPPORTS_TRIAL,
-	SAAS_REGISTRY_SERVICE_URL,
-	DOMAIN,
-	GEO_ACCESS
-FROM BTP_ACCOUNTS_SUBACCOUNT SA
-JOIN BTP.BTP_ENTITLEMENTS_DATACENTER DC ON SA.REGION = DC.REGION
-ORDER BY REGION,
-	SUBACCOUNT_NAME;
+select sa.guid subaccount_guid,
+	sa.display_name subaccount_name,
+	sa.subdomain subaccount_subdomain,
+	dc.name dc_name,
+	dc.display_name as dc_location,
+	sa.region,
+	environment,
+	dc.iaas_provider,
+	supports_trial,
+	saas_registry_service_url,
+	domain,
+	geo_access
+from btp_accounts_subaccount sa
+join btp.btp_entitlements_datacenter dc on sa.region = dc.region
+order by region,
+	subaccount_name;
 ```

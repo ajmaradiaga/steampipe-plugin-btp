@@ -7,15 +7,15 @@ Get the details of an SAP BTP global account.
 ### Get global account details
 
 ```sql
-SELECT GUID,
-	DISPLAY_NAME,
-	CREATED_DATE,
-	MODIFIED_DATE,
-	ENTITY_STATE,
-	STATE_MESSAGE,
-	SUBDOMAIN,
-	CONTRACT_STATUS,
-	COMMERCIAL_MODEL,
-	CONSUMPTION_BASED
-FROM BTP.BTP_ACCOUNTS_GLOBAL_ACCOUNT;
+select guid,
+	display_name,
+	created_date,
+	modified_date,
+	entity_state,
+	state_message,
+	subdomain,
+	contract_status,
+	commercial_model,
+	consumption_based
+from btp.btp_accounts_global_account;
 ```
