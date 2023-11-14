@@ -20,5 +20,4 @@ select
   consumption_based 
 from
   btp.btp_accounts_global_account;
-
 ```
