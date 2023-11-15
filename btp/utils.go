@@ -32,7 +32,7 @@ type (
 		query      map[string]string
 	}
 
-	// BaseAPI encapsulates base methods for zendesk client
+	// BaseAPI encapsulates base methods for BTP client
 	BaseAPI interface {
 		Get(ctx context.Context, path string) ([]byte, error)
 	}
