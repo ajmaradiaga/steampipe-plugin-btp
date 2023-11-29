@@ -1,6 +1,6 @@
 ---
 organization: ajmaradiaga
-category: ["public cloud"]
+category: ["paas"]
 icon_url: "/images/plugins/ajmaradiaga/btp.svg"
 brand_color: "#009FDD"
 display_name: "SAP BTP"
