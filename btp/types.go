@@ -164,15 +164,3 @@ type EntitledService struct {
 		} `json:"CFService"`
 	} `json:"applicationCoordinates"`
 }
-
-// type EntitledServiceSubaccount struct {
-// 	Name             string           `json:"name"`
-// 	DisplayName      string           `json:"displayName"`
-// 	Description      string           `json:"description"`
-// 	BusinessCategory BusinessCategory `json:"businessCategory"`
-// 	OwnerType        string           `json:"ownerType"`
-// 	TermsOfUseURL    string           `json:"termsOfUseUrl"`
-// 	ServicePlans     []ServicePlan    `json:"servicePlans"`
-// 	IconBase64       string           `json:"iconBase64"`
-// 	SubaccountGUID   string           `json:"subaccountGUID"`
-// }
