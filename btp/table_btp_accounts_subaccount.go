@@ -30,7 +30,7 @@ func tableBTPAccountsSubaccount() *plugin.Table {
 			{Name: "display_name", Type: proto.ColumnType_STRING, Description: "A descriptive name of the subaccount for customer-facing UIs."},
 			{Name: "global_account_guid", Type: proto.ColumnType_STRING, Description: "The unique ID of the subaccount's global account."},
 			{Name: "parent_guid", Type: proto.ColumnType_STRING, Description: "The GUID of the subaccount's parent entity. If the subaccount is located directly in the global account (not in a directory), then this is the GUID of the global account."},
-			{Name: "parent_type", Type: proto.ColumnType_STRING},
+			{Name: "parent_type", Type: proto.ColumnType_STRING, Description: "The type of the subaccount's parent entity."},
 			{Name: "parent_features", Type: proto.ColumnType_JSON, Description: "The parent features of the subaccount."},
 			{Name: "region", Type: proto.ColumnType_STRING, Description: "The region in which the subaccount was created."},
 			{Name: "subdomain", Type: proto.ColumnType_STRING, Description: "The subdomain that becomes part of the path used to access the authorization tenant of the subaccount. Must be unique within the defined region. Use only letters (a-z), digits (0-9), and hyphens (not at the start or end). Maximum length is 63 characters. Cannot be changed after the subaccount has been created."},
