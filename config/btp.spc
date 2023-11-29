@@ -1,10 +1,6 @@
 connection "btp" {
   plugin = "ajmaradiaga/btp"
 
-  #########
-  #  CIS  #
-  #########
-
   # You will need to create a service key for the Cloud Management Service. You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis.
 
   # URL of the Accounts Service. Required.
