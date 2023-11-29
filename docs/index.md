@@ -67,10 +67,6 @@ Configure your account details in `~/.steampipe/config/btp.spc`:
 connection "btp" {
   plugin = "btp"
 
-  #########
-  #  CIS  #
-  #########
-
   # You will need to create a service key for the Cloud Management Service. You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis.
 
   # URL of the Accounts Service. Required.
@@ -81,7 +77,7 @@ connection "btp" {
   # This can also be set via the `BTP_CIS_ENTITLEMENTS_SERVICE_URL` environment variable.
   cis_entitlements_service_url = "https://entitlements-service.cfapps.[region].hana.ondemand.com"
 
-  # Access token to communicate with the Cloud Management Service APIs. Required.
+  # Access token to communicate with the Cloud Management Service APIs. You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis. Required.
   # This can also be set via the `BTP_CIS_ACCESS_TOKEN` environment variable.
   cis_access_token = "eyJhbGciOiDBNsO0JxFoAaodkDJ3Pmk7cFEsEr5ml5BwNWEafrEjy8Hsxt2mVACpD8B4AIPpRuMoGE71qXGoPcW0vCugceTwN4C3xM8qYmH7DLQ"
  
