@@ -2,7 +2,7 @@
 organization: ajmaradiaga
 category: ["paas"]
 icon_url: "/images/plugins/ajmaradiaga/btp.svg"
-brand_color: "#009FDD"
+brand_color: "#002A86"
 display_name: "SAP BTP"
 short_name: "btp"
 description: "Steampipe plugin to query the account details of your SAP Business Technology Platform account."
