@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -36,7 +35,7 @@ func (e Error) Error() string {
 
 // Body is the Body of the HTTP response
 func (e Error) Body() io.ReadCloser {
-	return ioutil.NopCloser(bytes.NewBuffer(e.body))
+	return io.NopCloser(bytes.NewBuffer(e.body))
 }
 
 // Headers the HTTP headers returned from API
