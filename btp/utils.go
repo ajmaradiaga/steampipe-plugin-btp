@@ -89,7 +89,11 @@ func (b *BTPClient) getServiceURL(service BTPService) (string, error) {
 func (b *BTPClient) prepareRequest(ctx context.Context, req *http.Request, headers map[string]string, queryStrings map[string]string) *http.Request {
 	out := req.WithContext(ctx)
 
-	b.handleAuthentication(ctx)
+	err := b.handleAuthentication(ctx)
+
+	if err != nil {
+		plugin.Logger(ctx).Error("BTPClient.prepareRequest", "connection_error", err)
+	}
 
 	for key, value := range headers {
 		b.headers[key] = value
