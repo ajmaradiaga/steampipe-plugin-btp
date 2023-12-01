@@ -59,13 +59,13 @@ steampipe plugin install btp
 
 ### Configuration
 
-Installing the latest namecheap plugin will create a config file (`~/.steampipe/config/btp.spc`) with a single connection named `btp`:
+Installing the latest SAP BTP plugin will create a config file (`~/.steampipe/config/btp.spc`) with a single connection named `btp`:
 
 Configure your account details in `~/.steampipe/config/btp.spc`:
 
 ```hcl
 connection "btp" {
-  plugin = "btp"
+  plugin = "ajmaradiaga/btp"
 
   # You will need to create a service key for the Cloud Management Service. You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis.
 
