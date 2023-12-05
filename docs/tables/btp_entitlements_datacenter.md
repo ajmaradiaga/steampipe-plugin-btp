@@ -8,19 +8,31 @@ Get the details of all the data centers where a subaccount can be created in the
 
 ```sql
 select
-  * 
+  display_name,
+  region,
+  environment,
+  iaas_provider,
+  supports_trial,
+  domain,
+  is_main_data_center
 from
-  btp.btp_entitlements_datacenter;
+  btp_entitlements_datacenter;
 ```
 
 ### List all the Cloud Foundry data centers
 
 ```sql
 select
-  * 
+  display_name,
+  region,
+  environment,
+  iaas_provider,
+  supports_trial,
+  domain,
+  is_main_data_center
 from
-  btp.btp_entitlements_datacenter 
-WHERE
+  btp_entitlements_datacenter 
+where
   environment = 'cloudfoundry';
 ```
 
@@ -28,9 +40,14 @@ WHERE
 
 ```sql
 select
-  * 
+  display_name,
+  region,
+  environment,
+  iaas_provider,
+  supports_trial,
+  domain
 from
-  btp.btp_entitlements_datacenter 
+  btp_entitlements_datacenter 
 where
   is_main_data_center = False;
 ```
@@ -54,7 +71,7 @@ select
 from
   btp_accounts_subaccount sa 
   join
-    btp.btp_entitlements_datacenter dc 
+    btp_entitlements_datacenter dc 
     on sa.region = dc.region 
 order by
   region,
