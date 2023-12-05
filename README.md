@@ -1,3 +1,5 @@
+![image](https://hub.steampipe.io/images/plugins/ajmaradiaga/btp-social-graphic.png)
+
 # SAP BTP plugin for Steampipe
 
 Use SQL to query your SAP BTP account details.
