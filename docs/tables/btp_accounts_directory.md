@@ -8,9 +8,14 @@ Get the details of a directory in your global account.
 
 ```sql
 select
-  * 
+  guid,
+  display_name,
+  created_date,
+  entity_state,
+  state_message,
+  subaccounts 
 from
-  btp.btp_accounts_directory 
+  btp_accounts_directory 
 where
   guid = '35170704-2231-2v14-q4x1-c017f2525076';
 ```
