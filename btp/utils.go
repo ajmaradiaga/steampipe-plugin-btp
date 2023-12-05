@@ -4,10 +4,13 @@ import (
 	"context"
 	"errors"
 	"io"
+	"math"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 type BTPService string
@@ -190,4 +193,17 @@ func (b *BTPClient) Get(ctx context.Context, service BTPService, path string, he
 		}
 	}
 	return body, nil
+}
+
+// Source of this function: https://github.com/dboeke/steampipe-plugin-aws/blob/4a98b9c8b6172e6f4c70b2ee2b9fd269fd72198c/aws/utils.go#L44
+func convertTimestamp(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	epochTime := d.Value.(*int64)
+
+	if epochTime != nil {
+		timeInSec := math.Floor(float64(*epochTime) / 1000)
+		unixTimestamp := time.Unix(int64(timeInSec), 0)
+		timestampRFC3339Format := unixTimestamp.Format(time.RFC3339)
+		return timestampRFC3339Format, nil
+	}
+	return nil, nil
 }

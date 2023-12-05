@@ -7,6 +7,7 @@ import (
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 const (
@@ -26,9 +27,9 @@ func tableBTPAccountsDirectory() *plugin.Table {
 			{Name: "parent_type", Type: proto.ColumnType_STRING, Description: "The Type of the directory parent entity."},
 			{Name: "global_account_guid", Type: proto.ColumnType_STRING, Description: "The GUID of the directory's global account entity."},
 			{Name: "display_name", Type: proto.ColumnType_STRING, Description: "The display name of the directory."},
-			{Name: "created_date", Type: proto.ColumnType_INT, Description: "The date the directory was created. Dates and times are in UTC format."},
+			{Name: "created_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date the directory was created. Dates and times are in UTC format.", Transform: transform.FromField("createdDate").Transform(convertTimestamp)},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "Details of the user that created the directory."},
-			{Name: "modified_date", Type: proto.ColumnType_INT, Description: "The date the directory was last modified. Dates and times are in UTC format."},
+			{Name: "modified_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date the directory was last modified. Dates and times are in UTC format.", Transform: transform.FromField("modifiedDate").Transform(convertTimestamp)},
 			{Name: "entity_state", Type: proto.ColumnType_STRING, Description: "The current state of the directory.\n* <b>STARTED:</b> CRUD operation on an entity has started.\n* <b>CREATING:</b> Creating entity operation is in progress.\n* <b>UPDATING:</b> Updating entity operation is in progress.\n* <b>MOVING:</b> Moving entity operation is in progress.\n* <b>PROCESSING:</b> A series of operations related to the entity is in progress.\n* <b>DELETING:</b> Deleting entity operation is in progress.\n* <b>OK:</b> The CRUD operation or series of operations completed successfully.\n* <b>PENDING REVIEW:</b> The processing operation has been stopped for reviewing and can be restarted by the operator.\n* <b>CANCELLED:</b> The operation or processing was canceled by the operator.\n* <b>CREATION_FAILED:</b> The creation operation failed, and the entity was not created or was created but cannot be used.\n* <b>UPDATE_FAILED:</b> The update operation failed, and the entity was not updated.\n* <b>PROCESSING_FAILED:</b> The processing operations failed.\n* <b>DELETION_FAILED:</b> The delete operation failed, and the entity was not deleted.\n* <b>MOVE_FAILED:</b> Entity could not be moved to a different location.\n* <b>MIGRATING:</b> Migrating entity from NEO to CF."},
 			{Name: "state_message", Type: proto.ColumnType_STRING, Description: "Information about the state."},
 			{Name: "directory_type", Type: proto.ColumnType_STRING, Description: "Type of directory."},
