@@ -4,6 +4,7 @@ Use SQL to query your SAP BTP account details.
 
 - **[Get started →](https://hub.steampipe.io/plugins/ajmaradiaga/btp)**
 - Documentation: [Table definitions & examples](https://hub.steampipe.io/plugins/ajmaradiaga/btp/tables)
+- Community: [Join #steampipe on Slack →](https://turbot.com/community/join)
 - Get involved: [Issues](https://github.com/ajmaradiaga/steampipe-plugin-btp/issues)
 
 ## Quick start
@@ -13,7 +14,7 @@ Use SQL to query your SAP BTP account details.
 Download and install the latest SAP BTP plugin:
 
 ```bash
-steampipe plugin install btp
+steampipe plugin install ajmaradiaga/btp
 ```
 
 Configure your [credentials](https://hub.steampipe.io/plugins/ajmaradiaga/btp#credentials) and [config file](https://hub.steampipe.io/plugins/ajmaradiaga/btp#configuration).
@@ -64,7 +65,7 @@ select
    created_date,
    modified_date 
 from
-   btp.btp_accounts_global_account;
+   btp_accounts_global_account;
 ```
 
 ```
