@@ -19,5 +19,5 @@ select
   commercial_model,
   consumption_based 
 from
-  btp.btp_accounts_global_account;
+  btp_accounts_global_account;
 ```
