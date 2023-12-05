@@ -6,12 +6,9 @@ import (
 )
 
 type BTPConfig struct {
-	// Endpoints
 	CISAccountServiceUrl      *string `cty:"cis_accounts_service_url"`
 	CISEntitlementsServiceUrl *string `cty:"cis_entitlements_service_url"`
-
-	// Username
-	AccessToken *string `cty:"cis_access_token"`
+	AccessToken               *string `cty:"cis_access_token"`
 }
 
 var ConfigSchema = map[string]*schema.Attribute{
@@ -24,8 +21,7 @@ var ConfigSchema = map[string]*schema.Attribute{
 	},
 
 	"cis_access_token": {
-		Type:     schema.TypeString,
-		Required: false,
+		Type: schema.TypeString,
 	},
 }
 
