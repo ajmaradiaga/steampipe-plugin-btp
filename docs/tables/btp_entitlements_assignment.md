@@ -7,10 +7,11 @@ Get the details of all the service assignments available to the SAP BTP global a
 ### Get the business category of all services
 
 ```sql
-select distinct
+select 
+  distinct
   business_category ->> 'id' bc_id 
 from
-  btp_entitlements_assignment bes;
+  btp_entitlements_assignment;
 ```
 
 ### Nested JSON structures in the Entitlements API
@@ -20,7 +21,7 @@ select
   bes.display_name,
   service_plans 
 from
-  btp_entitlements_assignment bes;
+  btp_entitlements_assignment;
 ```
 
 ### Assignments and quota for a particular business category

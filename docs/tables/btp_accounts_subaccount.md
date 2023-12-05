@@ -39,7 +39,8 @@ order by
 ### List all directories
 
 ```sql
-select distinct
+select 
+  distinct
   parent_guid,
   parent_type 
 from
@@ -82,10 +83,9 @@ select
 from
   btp_accounts_subaccount sa 
   join
-    btp.btp_entitlements_datacenter dc 
+    btp_entitlements_datacenter dc 
     on sa.region = dc.region 
 order by
   region,
   subaccount_name;
-
 ```
