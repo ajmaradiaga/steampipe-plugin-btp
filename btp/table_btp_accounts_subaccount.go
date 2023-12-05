@@ -7,7 +7,6 @@ import (
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 const (
@@ -40,9 +39,9 @@ func tableBTPAccountsSubaccount() *plugin.Table {
 			{Name: "description", Type: proto.ColumnType_STRING, Description: "A description of the subaccount for customer-facing UIs."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "The current state of the subaccount."},
 			{Name: "state_message", Type: proto.ColumnType_STRING, Description: "Information about the state of the subaccount."},
-			{Name: "created_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date the subaccount was created. Dates and times are in UTC format.", Transform: transform.FromField("createdDate").Transform(convertTimestamp)},
+			{Name: "created_date", Type: proto.ColumnType_INT, Description: "The date the subaccount was created. Dates and times are in UTC format."},
 			{Name: "created_by", Type: proto.ColumnType_STRING, Description: "Details of the user that created the subaccount."},
-			{Name: "modified_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date the subaccount was last modified. Dates and times are in UTC format.", Transform: transform.FromField("modifiedDate").Transform(convertTimestamp)},
+			{Name: "modified_date", Type: proto.ColumnType_INT, Description: "The date the subaccount was last modified. Dates and times are in UTC format."},
 			{Name: "custom_properties", Type: proto.ColumnType_JSON, Description: "The custom properties of the subaccount."},
 		},
 	}

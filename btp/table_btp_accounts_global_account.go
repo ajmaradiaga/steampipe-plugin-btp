@@ -7,7 +7,6 @@ import (
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 const (
@@ -24,8 +23,8 @@ func tableBTPAccountsGlobalAccount() *plugin.Table {
 		Columns: []*plugin.Column{
 			{Name: "guid", Type: proto.ColumnType_STRING, Description: "The unique ID of the global account."},
 			{Name: "display_name", Type: proto.ColumnType_STRING, Description: "The display name of the global account."},
-			{Name: "created_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date the global account was created. Dates and times are in UTC format.", Transform: transform.FromField("createdDate").Transform(convertTimestamp)},
-			{Name: "modified_date", Type: proto.ColumnType_TIMESTAMP, Description: "The date the global account was last modified. Dates and times are in UTC format.", Transform: transform.FromField("modifiedDate").Transform(convertTimestamp)},
+			{Name: "created_date", Type: proto.ColumnType_INT, Description: "The date the global account was created. Dates and times are in UTC format."},
+			{Name: "modified_date", Type: proto.ColumnType_INT, Description: "The date the global account was last modified. Dates and times are in UTC format."},
 			{Name: "entity_state", Type: proto.ColumnType_STRING, Description: "The current state of the global account.\n* STARTED: CRUD operation on an entity has started.\n* CREATING: Creating entity operation is in progress.\n* UPDATING: Updating entity operation is in progress.\n* MOVING: Moving entity operation is in progress.\n* PROCESSING: A series of operations related to the entity is in progress.\n* DELETING: Deleting entity operation is in progress.\n* OK: The CRUD operation or series of operations completed successfully.\n* PENDING REVIEW: The processing operation has been stopped for reviewing and can be restarted by the operator.\n* CANCELLED: The operation or processing was canceled by the operator.\n* CREATION_FAILED: The creation operation failed, and the entity was not created or was created but cannot be used.\n* UPDATE_FAILED: The update operation failed, and the entity was not updated.\n* PROCESSING_FAILED: The processing operations failed.\n* DELETION_FAILED: The delete operation failed, and the entity was not deleted.\n* MOVE_FAILED: Entity could not be moved to a different location.\n* MIGRATING: Migrating entity from NEO to CF."},
 			{Name: "state_message", Type: proto.ColumnType_STRING, Description: "Information about the state."},
 			{Name: "subdomain", Type: proto.ColumnType_STRING, Description: "Relevant only for entities that require authorization (e.g. global account). The subdomain that becomes part of the path used to access the authorization tenant of the global account. Unique within the defined region."},
