@@ -25,7 +25,7 @@ select
    created_date,
    modified_date 
 from
-   btp.btp_accounts_global_account;
+   btp_accounts_global_account;
 ```
 
 ```
@@ -47,7 +47,7 @@ from
 Download and install the latest SAP BTP plugin:
 
 ```sh
-steampipe plugin install btp
+steampipe plugin install ajmaradiaga/btp
 ```
 
 ### Credentials
@@ -55,6 +55,8 @@ steampipe plugin install btp
 | Item        | Description                                                                                                                                                                                           |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Credentials | You will need to create a service key for the Cloud Management Service. You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis.                                                                |                                                               |
+| Permissions | Create a [Cloud Management Service with a `Central` service plan](https://discovery-center.cloud.sap/serviceCatalog/cloud-management-service?region=all&tab=service_plan) to manage your global account, subaccounts, directories, and entitlements.  |
+| Radius | Each connection represents a single SAP BTP account. |
 | Resolution  | 1. Credentials specified in environment variables, e.g., `BTP_CIS_ACCESS_TOKEN`.<br />2. Credentials explicitly set in a steampipe config file (`~/.steampipe/config/btp.spc`) |
 
 ### Configuration
@@ -95,3 +97,4 @@ export BTP_CIS_ACCESS_TOKEN=eyJhbGciOiDBNsO0JxFoAaodkDJ3Pmk7cFEsEr5ml5BwNWEafrEj
 ## Get involved
 
 - Open source: https://github.com/ajmaradiaga/steampipe-plugin-btp
+- Community: [Join #steampipe on Slack →](https://turbot.com/community/join)
