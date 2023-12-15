@@ -6,9 +6,9 @@ import (
 )
 
 type BTPConfig struct {
-	CISAccountServiceUrl      *string `cty:"cis_accounts_service_url"`
-	CISEntitlementsServiceUrl *string `cty:"cis_entitlements_service_url"`
-	AccessToken               *string `cty:"cis_access_token"`
+	CISAccountServiceUrl      *string `hcl:"cis_accounts_service_url"`
+	CISEntitlementsServiceUrl *string `hcl:"cis_entitlements_service_url"`
+	AccessToken               *string `hcl:"cis_access_token"`
 }
 
 var ConfigSchema = map[string]*schema.Attribute{
