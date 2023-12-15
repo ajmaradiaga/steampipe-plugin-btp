@@ -1,4 +1,4 @@
-## v0.0.1 [Initial release]
+## v0.0.1 [2023-12-15]
 
 _What's new?_
 
