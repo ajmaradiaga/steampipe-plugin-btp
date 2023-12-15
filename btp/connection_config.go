@@ -27,54 +27,6 @@ type BTPConfig struct {
 	CISClientSecret           string  `hcl:"cis_client_secret,optional"`
 }
 
-var ConfigSchema = map[string]*schema.Attribute{
-	"cis_accounts_service_url": {
-		Type: schema.TypeString,
-	},
-
-	"cis_entitlements_service_url": {
-		Type: schema.TypeString,
-	},
-
-	"cis_access_token": {
-		Type:     schema.TypeString,
-		Required: false,
-	},
-
-	// Username and password to be used in combination with cis_token_url, cis_client_id and cis_client_secret when retrieving access token
-	"username": {
-		Type:     schema.TypeString,
-		Required: false,
-	},
-
-	"password": {
-		Type:     schema.TypeString,
-		Required: false,
-	},
-
-	"cis_token_url": {
-		Type:     schema.TypeString,
-		Required: false,
-	},
-
-	"cis_client_id": {
-		Type:     schema.TypeString,
-		Required: false,
-	},
-
-	"cis_client_secret": {
-		Type:     schema.TypeString,
-		Required: false,
-	},
-
-	"cis_service_key_path": {
-		Type:     schema.TypeString,
-		Required: false,
-	},
->>>>>>> a7118c7 (Including additional config supported)
->>>>>>> 2f53a7e (Including additional config supported)
-}
-
 func ConfigInstance() interface{} {
 	return &BTPConfig{}
 }
