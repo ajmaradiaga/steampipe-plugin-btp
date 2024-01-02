@@ -8,13 +8,14 @@ short_name: "btp"
 description: "Steampipe plugin to query the account details of your SAP Business Technology Platform account."
 og_description: "Query SAP BTP with SQL! Open source CLI. No DB required."
 og_image: "/images/plugins/ajmaradiaga/sap-btp-graphic.png"
+engines: ["steampipe", "sqlite", "postgres", "export"]
 ---
 
 # SAP BTP + Steampipe
 
 [SAP BTP](https://www.sap.com/products/technology-platform.html) brings together data and analytics, artificial intelligence, application development, automation, and integration in one, unified environment.
 
-[Steampipe](https://steampipe.io) is an open source CLI to instantly query cloud APIs using SQL.
+[Steampipe](https://steampipe.io) is an open-source zero-ETL engine to instantly query cloud APIs using SQL.
 
 List your SAP BTP Global account details:
 
