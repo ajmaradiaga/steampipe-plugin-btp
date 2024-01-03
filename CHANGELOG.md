@@ -1,3 +1,9 @@
+## v0.0.2 [2024-01-03]
+
+_What's new?_
+
+- Aligning documentation with Turbot release week changes
+
 ## v0.0.1 [2023-12-15]
 
 _What's new?_
