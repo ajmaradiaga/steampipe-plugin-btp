@@ -50,7 +50,7 @@ func getDirectory(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDat
 
 	logger.Trace("Hydrating list subaccounts")
 
-	btpClient, err := NewBTPClient(nil, d.Connection)
+	btpClient, err := NewBTPClient(nil, d)
 	if err != nil {
 		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
 		return nil, err

@@ -40,7 +40,7 @@ func listGlobalAccountAssignments(ctx context.Context, d *plugin.QueryData, h *p
 
 	logger.Trace("Hydrating list of assignments")
 
-	btpClient, err := NewBTPClient(nil, d.Connection)
+	btpClient, err := NewBTPClient(nil, d)
 	if err != nil {
 		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
 		return nil, err

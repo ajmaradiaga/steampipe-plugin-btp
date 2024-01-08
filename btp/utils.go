@@ -2,10 +2,14 @@ package btp
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
@@ -39,12 +43,20 @@ type (
 )
 
 // NewBTPClient creates new SAP BTP API client
-func NewBTPClient(httpClient *http.Client, connection *plugin.Connection) (*BTPClient, error) {
+func NewBTPClient(httpClient *http.Client, d *plugin.QueryData) (*BTPClient, error) {
+
+	// Load connection from cache
+	cacheKey := d.Connection.Name
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(*BTPClient), nil
+	}
+
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
 
 	client := &BTPClient{httpClient: httpClient}
+	connection := d.Connection
 
 	if connection == nil || connection.Config == nil {
 		client.config = BTPConfig{}
@@ -55,6 +67,9 @@ func NewBTPClient(httpClient *http.Client, connection *plugin.Connection) (*BTPC
 
 	client.headers = defaultHeaders
 	client.query = defaultQueryStrings
+
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, client)
 
 	return client, nil
 }
@@ -86,13 +101,14 @@ func (b *BTPClient) getServiceURL(service BTPService) (string, error) {
 }
 
 // prepare request sets common request variables and sets headers and query strings
-func (b *BTPClient) prepareRequest(ctx context.Context, req *http.Request, headers map[string]string, queryStrings map[string]string) *http.Request {
+func (b *BTPClient) prepareRequest(ctx context.Context, service BTPService, req *http.Request, headers map[string]string, queryStrings map[string]string) (*http.Request, error) {
 	out := req.WithContext(ctx)
 
-	err := b.handleAuthentication(ctx)
+	err := b.handleAuthentication(ctx, service)
 
 	if err != nil {
 		plugin.Logger(ctx).Error("BTPClient.prepareRequest", "connection_error", err)
+		return nil, err
 	}
 
 	for key, value := range headers {
@@ -106,7 +122,7 @@ func (b *BTPClient) prepareRequest(ctx context.Context, req *http.Request, heade
 	b.includeHeaders(out)
 	b.includeQueryStrings(out)
 
-	return out
+	return out, nil
 }
 
 // includeHeaders set HTTP headers from client.headers to *http.Request
@@ -127,33 +143,130 @@ func (b *BTPClient) includeQueryStrings(req *http.Request) {
 	req.URL.RawQuery = q.Encode()
 }
 
-func (b *BTPClient) handleAuthentication(ctx context.Context) error {
-	btpEnvironmentAccessToken := os.Getenv("BTP_CIS_ACCESS_TOKEN")
-
-	// Prioritise access token set as an environment variable
-	if btpEnvironmentAccessToken != "" {
-		b.config.AccessToken = &btpEnvironmentAccessToken
-	} else if b.config.AccessToken != nil {
-		btpEnvironmentAccessToken = *b.config.AccessToken
+func prioritiseEnvVar(envVar string, configVar *string) string {
+	// Prioritise environment variable than config value
+	if envVar != "" {
+		return envVar
 	}
 
-	if btpEnvironmentAccessToken == "" {
-		err := errors.New("'cis_access_token' must be set in the connection configuration. Edit your connection configuration file or set the BTP_CIS_ACCESS_TOKEN environment variable and then restart Steampipe")
+	if configVar != nil {
+		return *configVar
+	}
+
+	return ""
+}
+
+func (b *BTPClient) handleAuthentication(ctx context.Context, service BTPService) error {
+	debugFormat := "BTPClient.handleAuthentication: %s"
+	logger := plugin.Logger(ctx)
+
+	logger.Debug(fmt.Sprintf(debugFormat, "EXPLORING b.config\n===================="))
+	logger.Debug(fmt.Sprintf(debugFormat, b.config.CISServiceKeyPath))
+	logger.Debug(fmt.Sprintf(debugFormat, b.config.CISEventsServiceUrl))
+	logger.Debug(fmt.Sprintf(debugFormat, "===================\nEND EXPLORING b.config\n===================="))
+
+	logger.Debug(fmt.Sprintf(debugFormat, "service"), service)
+	if service == AccountsService || service == EntitlementService {
+
+		btpEnvironmentAccessToken := prioritiseEnvVar(os.Getenv("BTP_CIS_ACCESS_TOKEN"), b.config.CISAccessToken)
+
+		if btpEnvironmentAccessToken != "" {
+			logger.Debug(fmt.Sprintf(debugFormat, "access token exists"))
+			b.headers["Authorization"] = "Bearer " + btpEnvironmentAccessToken
+
+			return nil
+		} else {
+			logger.Debug(fmt.Sprintf(debugFormat, "No access token, retrieving using service key details"))
+
+			// Get access token using CIS service key details (client_id, client_secret, token_url)
+			username := prioritiseEnvVar(os.Getenv("BTP_USERNAME"), b.config.Username)
+			password := prioritiseEnvVar(os.Getenv("BTP_PASSWORD"), b.config.Password)
+			tokenUrl := prioritiseEnvVar(os.Getenv("BTP_CIS_TOKEN_URL"), b.config.CISTokenUrl)
+			clientId := prioritiseEnvVar(os.Getenv("BTP_CIS_CLIENT_ID"), b.config.CISClientId)
+			clientSecret := prioritiseEnvVar(os.Getenv("BTP_CIS_CLIENT_SECRET"), b.config.CISClientSecret)
+
+			if username == "" || password == "" || tokenUrl == "" || clientId == "" || clientSecret == "" {
+				err := errors.New("as no cis_access_token has been provided, you need to set 'username, password, cis_token_url, cis_client_id, cis_client_secret' in the connection configuration or as environment variables (BTP_USERNAME, BTP_PASSWORD, BTP_CIS_TOKEN_URL, BTP_CIS_CLIENT_ID, BTP_CIS_CLIENT_SECRET)")
+				logger.Error("BTPClient.handleAuthentication", "connection_config_error", err)
+
+				return err
+			}
+
+			// Check if tokenUrl contains /oauth/token, if not append it
+			if !strings.Contains(tokenUrl, "/oauth/token") {
+				logger.Debug(fmt.Sprintf(debugFormat, "Appending /oauth/token to tokenUrl"))
+				tokenUrl = tokenUrl + "/oauth/token"
+			}
+
+			// Get access token using the details provided
+			tokenResponse, err := getOauthAccessToken(ctx, tokenUrl, clientId, clientSecret, username, password)
+
+			if err != nil {
+				logger.Error("BTPClient.handleAuthentication", "authentication_error", err)
+				return err
+			}
+
+			b.config.CISAccessToken = &tokenResponse.AccessToken
+
+			b.headers["Authorization"] = "Bearer " + tokenResponse.AccessToken
+
+			return nil
+		}
+
+	} else {
+		err := fmt.Errorf("service authentication not handled: %s.", service)
 		plugin.Logger(ctx).Error("BTPClient.handleAuthentication", "configuration_error", err)
 
 		return err
 	}
 
-	b.headers["Authorization"] = "Bearer " + btpEnvironmentAccessToken
+}
 
-	return nil
+func getOauthAccessToken(ctx context.Context, tokenUrl string, clientId string, clientSecret string, username string, password string) (*TokenResponse, error) {
+	plugin.Logger(ctx).Info("BTPClient.getOauthAccessToken", "Getting an access token")
+	method := "POST"
 
+	payload := strings.NewReader(fmt.Sprintf("grant_type=password&username=%s&password=%s", html.EscapeString(username), html.EscapeString(password)))
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, tokenUrl, payload)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.SetBasicAuth(clientId, clientSecret)
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var tokenResponse TokenResponse
+
+	// Convert JSON response to Directory structure
+	err = json.Unmarshal(body, &tokenResponse)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &tokenResponse, nil
 }
 
 // Get from API
 func (b *BTPClient) Get(ctx context.Context, service BTPService, path string, headers map[string]string, queryStrings map[string]string) ([]byte, error) {
 	logger := plugin.Logger(ctx)
-
+	logger.Debug("BTPClient.CONFIG", "ServiceKeyPath", *b.config.CISServiceKeyPath)
+	logger.Debug("BTPClient.CONFIG", "EventsURL", b.config.CISEventsServiceUrl)
 	baseURL, err := b.getServiceURL(service)
 	if err != nil {
 		return nil, err
@@ -161,29 +274,34 @@ func (b *BTPClient) Get(ctx context.Context, service BTPService, path string, he
 
 	req, err := http.NewRequest(http.MethodGet, baseURL+path, nil)
 	if err != nil {
-		plugin.Logger(ctx).Error("BTPClient.Get", "connection_error", err)
+		logger.Error("BTPClient.Get", "connection_error", err)
 		return nil, err
 	}
 
-	req = b.prepareRequest(ctx, req, headers, queryStrings)
+	req, err = b.prepareRequest(ctx, service, req, headers, queryStrings)
 
-	logger.Warn("Get", "requestURI", req.URL.String())
+	if err != nil {
+		logger.Error("BTPClient.Get", "request_error", err)
+		return nil, err
+	}
+
+	logger.Warn("BTPClient.Get", "requestURI", req.URL.String())
 
 	resp, err := b.httpClient.Do(req)
 	if err != nil {
-		plugin.Logger(ctx).Error("BTPClient.Get", "connection_error", err)
+		logger.Error("BTPClient.Get", "connection_error", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		plugin.Logger(ctx).Error("BTPClient.Get", "connection_error", err)
+		logger.Error("BTPClient.Get", "connection_error", err)
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		plugin.Logger(ctx).Error("BTPClient.Get", "api_error", err)
+		logger.Error("BTPClient.Get", "api_error", err)
 		return nil, Error{
 			body: body,
 			resp: resp,
