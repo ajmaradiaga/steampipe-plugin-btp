@@ -17,7 +17,13 @@ type CISServiceKeyConfig struct {
 type BTPConfig struct {
 	CISAccountServiceUrl      *string `hcl:"cis_accounts_service_url"`
 	CISEntitlementsServiceUrl *string `hcl:"cis_entitlements_service_url"`
-	AccessToken               *string `hcl:"cis_access_token"`
+	CISAccessToken            *string `hcl:"cis_access_token"`
+	Username                  *string `hcl:"username"`
+	Password                  *string `hcl:"password"`
+	CISTokenUrl               *string `hcl:"cis_token_url"`
+	CISClientId               *string `hcl:"cis_client_id"`
+	CISClientSecret           *string `hcl:"cis_client_secret"`
+	CISServiceKeyPath         *string `hcl:"cis_service_key_path"`
 }
 
 func ConfigInstance() interface{} {
