@@ -1,3 +1,11 @@
+## v0.1.0 [2024-01-09]
+
+_What's new?_
+
+- The plugin now supports:
+  - Reading service key details from a file: There is no need to specify lots of variables in the connection if a path to the service key is provided in the config cis_service_key_path (BTP_CIS_SERVICE_KEY_PATH).
+  - Authenticating on behalf of a user to get an access token. Two new variables are required in the config: username (BTP_USERNAME) and password (BTP_PASSWORD). Note: The access token will be cached by the plugin. 
+
 ## v0.0.2 [2024-01-03]
 
 _What's new?_
