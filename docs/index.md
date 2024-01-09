@@ -116,17 +116,6 @@ connection "btp" {
   # The value in the service key doesn't contain the path, /oauth/token, if not specified the plugin will append it automatically.
   # This can also be set via the `BTP_CIS_TOKEN_URL` environment variable. Optional.
   # cis_token_url = "https://[global-account-subdomain].authentication.[region].hana.ondemand.com"
-<<<<<<< HEAD
-=======
-
-  # User Email used to log in to SAP BTP.
-  # This can also be set via the `BTP_USERNAME` environment variable. Optional.
-  # username = "user@domain.com"
-
-  # User Password used to log in to SAP BTP.
-  # This can also be set via the `BTP_PASSWORD` environment variable. Optional.
-  # password = "My-BTP-Passw0rd"
->>>>>>> 2f53a7e (Including additional config supported)
 }
 ```
 
