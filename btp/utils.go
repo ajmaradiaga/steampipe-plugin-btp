@@ -46,6 +46,7 @@ type (
 // NewBTPClient creates new SAP BTP API client
 func NewBTPClient(httpClient *http.Client, ctx context.Context, d *plugin.QueryData) (*BTPClient, error) {
 
+	fnName := "NewBTPClient"
 	debugFormat := "BTPClient.NewBTPClient: %s"
 	logger := plugin.Logger(ctx)
 
@@ -71,7 +72,7 @@ func NewBTPClient(httpClient *http.Client, ctx context.Context, d *plugin.QueryD
 
 		logger.Debug(fmt.Sprintf(debugFormat, "connection is not nil"))
 
-		logger.Debug(fmt.Sprintf(debugFormat, config))
+		logger.Debug(fmt.Sprintf(debugFormat, config.CISServiceKeyPath))
 
 		CISServiceKeyPath := prioritiseEnvVar(os.Getenv("BTP_CIS_SERVICE_KEY_PATH"), config.CISServiceKeyPath)
 
@@ -101,7 +102,15 @@ func NewBTPClient(httpClient *http.Client, ctx context.Context, d *plugin.QueryD
 			logger.Debug(fmt.Sprintf(debugFormat, string(data)))
 
 			var serviceKey CISServiceKeyConfig
-			json.Unmarshal(data, &serviceKey)
+			err = json.Unmarshal(data, &serviceKey)
+
+			logger.Warn(fnName, "data", data)
+			logger.Warn(fnName, "err", err)
+
+			if err != nil {
+				logger.Error(fnName, "service_key_error", err)
+				return nil, err
+			}
 
 			// Setting the config values from the service key
 			config.CISAccountServiceUrl = prioritiseConfigVar(&config.CISAccountServiceUrl, serviceKey.Endpoints["accounts_service_url"])

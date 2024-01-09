@@ -1,11 +1,6 @@
 package btp
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"os"
-
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
@@ -38,28 +33,5 @@ func GetConfig(connection *plugin.Connection) BTPConfig {
 	}
 	config, _ := connection.Config.(BTPConfig)
 
-<<<<<<< HEAD
-=======
-	// Reads the JSON file in cis_service_key_path and sets the value of cis_client_id and cis_client_secret
-	if config.CISServiceKeyPath != nil {
-		jsonFile, err := os.Open(*config.CISServiceKeyPath)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer jsonFile.Close()
-
-		data, err := io.ReadAll(jsonFile)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		var serviceKey CISServiceKeyConfig
-		json.Unmarshal(data, &serviceKey)
-
-		config.CISEventsServiceUrl = serviceKey.Endpoints["events"]
-
-	}
->>>>>>> 2f53a7e (Including additional config supported)
 	return config
 }
