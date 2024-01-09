@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
@@ -43,7 +44,12 @@ type (
 )
 
 // NewBTPClient creates new SAP BTP API client
-func NewBTPClient(httpClient *http.Client, d *plugin.QueryData) (*BTPClient, error) {
+func NewBTPClient(httpClient *http.Client, ctx context.Context, d *plugin.QueryData) (*BTPClient, error) {
+
+	debugFormat := "BTPClient.NewBTPClient: %s"
+	logger := plugin.Logger(ctx)
+
+	logger.Debug(fmt.Sprintf(debugFormat, "EXPLORING NewBTPClient\n===================="))
 
 	// Load connection from cache
 	cacheKey := d.Connection.Name
@@ -62,6 +68,53 @@ func NewBTPClient(httpClient *http.Client, d *plugin.QueryData) (*BTPClient, err
 		client.config = BTPConfig{}
 	} else {
 		config, _ := connection.Config.(BTPConfig)
+
+		logger.Debug(fmt.Sprintf(debugFormat, "connection is not nil"))
+
+		logger.Debug(fmt.Sprintf(debugFormat, config))
+
+		CISServiceKeyPath := prioritiseEnvVar(os.Getenv("BTP_CIS_SERVICE_KEY_PATH"), config.CISServiceKeyPath)
+
+		// Reads the JSON file in cis_service_key_path or the environment variable and sets the value of cis_client_id and cis_client_secret
+
+		if CISServiceKeyPath != "" {
+
+			logger.Debug(fmt.Sprintf(debugFormat, "CISServiceKeyPath is not empty"))
+
+			expandedPath, err := homedir.Expand(*config.CISServiceKeyPath)
+			if err != nil {
+				return nil, err
+			}
+
+			jsonFile, err := os.Open(expandedPath)
+
+			if err != nil {
+				fmt.Println(err)
+			}
+			defer jsonFile.Close()
+
+			data, err := io.ReadAll(jsonFile)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			logger.Debug(fmt.Sprintf(debugFormat, string(data)))
+
+			var serviceKey CISServiceKeyConfig
+			json.Unmarshal(data, &serviceKey)
+
+			// Setting the config values from the service key
+			config.CISAccountServiceUrl = prioritiseConfigVar(&config.CISAccountServiceUrl, serviceKey.Endpoints["accounts_service_url"])
+			config.CISEntitlementsServiceUrl = prioritiseConfigVar(&config.CISEntitlementsServiceUrl, serviceKey.Endpoints["entitlements_service_url"])
+			config.CISEventsServiceUrl = prioritiseConfigVar(&config.CISEventsServiceUrl, serviceKey.Endpoints["events_service_url"])
+			config.CISTokenUrl = prioritiseConfigVar(&config.CISTokenUrl, serviceKey.Uaa["url"])
+			config.CISClientId = prioritiseConfigVar(&config.CISClientId, serviceKey.Uaa["clientid"])
+			config.CISClientSecret = prioritiseConfigVar(&config.CISClientSecret, serviceKey.Uaa["clientsecret"])
+
+			logger.Debug(fmt.Sprintf(debugFormat, config.CISAccountServiceUrl))
+
+		}
+
 		client.config = config
 	}
 
@@ -78,23 +131,9 @@ func NewBTPClient(httpClient *http.Client, d *plugin.QueryData) (*BTPClient, err
 func (b *BTPClient) getServiceURL(service BTPService) (string, error) {
 	switch service {
 	case AccountsService:
-		btpEnvironmentVariable := os.Getenv("BTP_CIS_ACCOUNTS_SERVICE_URL")
-
-		// Prioritise environment variable
-		if btpEnvironmentVariable != "" {
-			return btpEnvironmentVariable, nil
-		}
-
-		return *b.config.CISAccountServiceUrl, nil
+		return prioritiseEnvVar(os.Getenv("BTP_CIS_ACCOUNTS_SERVICE_URL"), &b.config.CISAccountServiceUrl), nil
 	case EntitlementService:
-		btpEnvironmentVariable := os.Getenv("BTP_CIS_ENTITLEMENTS_SERVICE_URL")
-
-		// Prioritise environment variable
-		if btpEnvironmentVariable != "" {
-			return btpEnvironmentVariable, nil
-		}
-
-		return *b.config.CISEntitlementsServiceUrl, nil
+		return prioritiseEnvVar(os.Getenv("BTP_CIS_ENTITLEMENTS_SERVICE_URL"), &b.config.CISEntitlementsServiceUrl), nil
 	}
 
 	return "", nil
@@ -106,8 +145,10 @@ func (b *BTPClient) prepareRequest(ctx context.Context, service BTPService, req 
 
 	err := b.handleAuthentication(ctx, service)
 
+	logger := plugin.Logger(ctx)
+
 	if err != nil {
-		plugin.Logger(ctx).Error("BTPClient.prepareRequest", "connection_error", err)
+		logger.Error("BTPClient.prepareRequest", "connection_error", err)
 		return nil, err
 	}
 
@@ -143,6 +184,19 @@ func (b *BTPClient) includeQueryStrings(req *http.Request) {
 	req.URL.RawQuery = q.Encode()
 }
 
+func prioritiseConfigVar(configVar *string, serviceKeyValue string) string {
+	// Prioritise config variable than service key value
+	if configVar != nil && *configVar != "" {
+		return *configVar
+	}
+
+	if serviceKeyValue != "" {
+		return serviceKeyValue
+	}
+
+	return ""
+}
+
 func prioritiseEnvVar(envVar string, configVar *string) string {
 	// Prioritise environment variable than config value
 	if envVar != "" {
@@ -161,14 +215,14 @@ func (b *BTPClient) handleAuthentication(ctx context.Context, service BTPService
 	logger := plugin.Logger(ctx)
 
 	logger.Debug(fmt.Sprintf(debugFormat, "EXPLORING b.config\n===================="))
-	logger.Debug(fmt.Sprintf(debugFormat, b.config.CISServiceKeyPath))
+	logger.Debug(fmt.Sprintf(debugFormat, *b.config.CISServiceKeyPath))
 	logger.Debug(fmt.Sprintf(debugFormat, b.config.CISEventsServiceUrl))
 	logger.Debug(fmt.Sprintf(debugFormat, "===================\nEND EXPLORING b.config\n===================="))
 
 	logger.Debug(fmt.Sprintf(debugFormat, "service"), service)
 	if service == AccountsService || service == EntitlementService {
 
-		btpEnvironmentAccessToken := prioritiseEnvVar(os.Getenv("BTP_CIS_ACCESS_TOKEN"), b.config.CISAccessToken)
+		btpEnvironmentAccessToken := prioritiseEnvVar(os.Getenv("BTP_CIS_ACCESS_TOKEN"), &b.config.CISAccessToken)
 
 		if btpEnvironmentAccessToken != "" {
 			logger.Debug(fmt.Sprintf(debugFormat, "access token exists"))
@@ -181,9 +235,9 @@ func (b *BTPClient) handleAuthentication(ctx context.Context, service BTPService
 			// Get access token using CIS service key details (client_id, client_secret, token_url)
 			username := prioritiseEnvVar(os.Getenv("BTP_USERNAME"), b.config.Username)
 			password := prioritiseEnvVar(os.Getenv("BTP_PASSWORD"), b.config.Password)
-			tokenUrl := prioritiseEnvVar(os.Getenv("BTP_CIS_TOKEN_URL"), b.config.CISTokenUrl)
-			clientId := prioritiseEnvVar(os.Getenv("BTP_CIS_CLIENT_ID"), b.config.CISClientId)
-			clientSecret := prioritiseEnvVar(os.Getenv("BTP_CIS_CLIENT_SECRET"), b.config.CISClientSecret)
+			tokenUrl := prioritiseEnvVar(os.Getenv("BTP_CIS_TOKEN_URL"), &b.config.CISTokenUrl)
+			clientId := prioritiseEnvVar(os.Getenv("BTP_CIS_CLIENT_ID"), &b.config.CISClientId)
+			clientSecret := prioritiseEnvVar(os.Getenv("BTP_CIS_CLIENT_SECRET"), &b.config.CISClientSecret)
 
 			if username == "" || password == "" || tokenUrl == "" || clientId == "" || clientSecret == "" {
 				err := errors.New("as no cis_access_token has been provided, you need to set 'username, password, cis_token_url, cis_client_id, cis_client_secret' in the connection configuration or as environment variables (BTP_USERNAME, BTP_PASSWORD, BTP_CIS_TOKEN_URL, BTP_CIS_CLIENT_ID, BTP_CIS_CLIENT_SECRET)")
@@ -206,7 +260,7 @@ func (b *BTPClient) handleAuthentication(ctx context.Context, service BTPService
 				return err
 			}
 
-			b.config.CISAccessToken = &tokenResponse.AccessToken
+			b.config.CISAccessToken = tokenResponse.AccessToken
 
 			b.headers["Authorization"] = "Bearer " + tokenResponse.AccessToken
 
@@ -215,7 +269,7 @@ func (b *BTPClient) handleAuthentication(ctx context.Context, service BTPService
 
 	} else {
 		err := fmt.Errorf("service authentication not handled: %s.", service)
-		plugin.Logger(ctx).Error("BTPClient.handleAuthentication", "configuration_error", err)
+		logger.Error("BTPClient.handleAuthentication", "configuration_error", err)
 
 		return err
 	}
@@ -223,7 +277,9 @@ func (b *BTPClient) handleAuthentication(ctx context.Context, service BTPService
 }
 
 func getOauthAccessToken(ctx context.Context, tokenUrl string, clientId string, clientSecret string, username string, password string) (*TokenResponse, error) {
-	plugin.Logger(ctx).Info("BTPClient.getOauthAccessToken", "Getting an access token")
+	logger := plugin.Logger(ctx)
+
+	logger.Info("BTPClient.getOauthAccessToken", "Getting an access token")
 	method := "POST"
 
 	payload := strings.NewReader(fmt.Sprintf("grant_type=password&username=%s&password=%s", html.EscapeString(username), html.EscapeString(password)))

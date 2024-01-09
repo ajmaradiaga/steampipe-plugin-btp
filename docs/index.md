@@ -58,7 +58,7 @@ steampipe plugin install ajmaradiaga/btp
 | Credentials | You will need to create a service key for the Cloud Management Service. You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis.                                                                |                                                               |
 | Permissions | Create a [Cloud Management Service with a `Central` service plan](https://discovery-center.cloud.sap/serviceCatalog/cloud-management-service?region=all&tab=service_plan) to manage your global account, subaccounts, directories, and entitlements.  |
 | Radius | Each connection represents a single SAP BTP account. |
-| Resolution  | You can authenticate by providing an access token or the details of a service key in the connection config file. The plugin prioritises an access token if one is provided.<br/><ol><li>The access token can be provided via environment variables or in the connection config file. <br/><ol><li>Access token specified in environment variables, e.g., `BTP_CIS_ACCESS_TOKEN`.</li><li>Access token explicitly set in a steampipe config file (`~/.steampipe/config/btp.spc`)</li></ol><li>Service key details can be provided via environment variables or in the connection config file.<ol><li>Service key details provided in environment variables, e.g., `BTP_CIS_CLIENT_ID`, `BTP_CIS_CLIENT_SECRET`, `BTP_CIS_TOKEN_URL`.</li><li>Service key details explicitly set in a steampipe config file (`~/.steampipe/config/btp.spc`)</li></ol></ol> |
+| Resolution  | You can authenticate by providing an access token or the details of a service key in the connection config file. The plugin prioritises an access token if one is provided.<br/><ol><li>The access token can be provided via environment variables or in the connection config file. <br/><ol><li>Access token specified in environment variables, e.g., `BTP_CIS_ACCESS_TOKEN`.</li><li>Access token explicitly set in a steampipe config file (`~/.steampipe/config/btp.spc`)</li></ol><li>Service key details can be provided by specifying a file path to the service key via environment variable (`BTP_CIS_SERVICE_KEY_PATH`) or in the connection config file (`cis_service_key_path`).<ol><li>Service key details provided in environment variables, e.g., `BTP_CIS_CLIENT_ID`, `BTP_CIS_CLIENT_SECRET`, `BTP_CIS_TOKEN_URL` will be prioritised over the values in the config file.</li><li>Service key details explicitly set in a steampipe config file (`~/.steampipe/config/btp.spc`)</li></ol></ol><br/>Generally the plugin prioritises environment variables then values in the config file and lastly values in the service key file. |
 
 ### Configuration
 
@@ -70,14 +70,24 @@ Configure your account details in `~/.steampipe/config/btp.spc`:
 connection "btp" {
   plugin = "ajmaradiaga/btp"
 
-  # You will need to create a service key for the Cloud Management Service. 
-  # You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis.
+  # User email used to log in to SAP BTP. Required.
+  # This can also be set via the `BTP_USERNAME` environment variable.
+  # username = "user@domain.com"
 
-  # URL of the Accounts Service. Required.
+  # User password used to log in to SAP BTP. Required.
+  # This can also be set via the `BTP_PASSWORD` environment variable.
+  # password = "My-BTP-Passw0rd"
+
+  # You will need to create a service key for the Cloud Management Service. Required.
+  # You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis.
+  # This can also be set via the `BTP_CIS_SERVICE_KEY_PATH` environment variable. Required.
+  # cis_service_key_path = "~/service_keys/cis_global.json"
+
+  # URL of the Accounts Service. Optional.
   # This can also be set via the `BTP_CIS_ACCOUNTS_SERVICE_URL` environment variable.
   # cis_accounts_service_url = "https://accounts-service.cfapps.[region].hana.ondemand.com"
   
-  # URL of the Entitlements Service. Required.
+  # URL of the Entitlements Service. Optional.
   # This can also be set via the `BTP_CIS_ENTITLEMENTS_SERVICE_URL` environment variable.
   # cis_entitlements_service_url = "https://entitlements-service.cfapps.[region].hana.ondemand.com"
 
@@ -102,20 +112,15 @@ connection "btp" {
   # The value in the service key doesn't contain the path, /oauth/token, if not specified the plugin will append it automatically.
   # This can also be set via the `BTP_CIS_TOKEN_URL` environment variable. Optional.
   # cis_token_url = "https://[global-account-subdomain].authentication.[region].hana.ondemand.com"
-
-  # User Email used to log in to SAP BTP.
-  # This can also be set via the `BTP_USERNAME` environment variable. Optional.
-  # username = "user@domain.com"
-
-  # User Password used to log in to SAP BTP.
-  # This can also be set via the `BTP_PASSWORD` environment variable. Optional.
-  # password = "My-BTP-Passw0rd"
 }
 ```
 
 Alternatively, you can also use the environment variables specified below:
 
 ```sh
+export BTP_USERNAME=user@domain.com
+export BTP_PASSWORD=My-BTP-Passw0rd
+export BTP_CIS_SERVICE_KEY_PATH=~/service_keys/cis_global.json
 export BTP_CIS_ACCOUNTS_SERVICE_URL=https://accounts-service.cfapps.eu10.hana.ondemand.com
 export BTP_CIS_ENTITLEMENTS_SERVICE_URL=https://entitlements-service.cfapps.eu10.hana.ondemand.com
 export BTP_CIS_ACCESS_TOKEN=eyJhbGciOiDBNsO0JxFoAaodkDJ3Pmk7cFEsEr5ml5BwNWEafrEjy8Hsxt2mVACpD8B4AIPpRuMoGE71qXGoPcW0vCugceTwN4C3xM8qYmH7DLQ

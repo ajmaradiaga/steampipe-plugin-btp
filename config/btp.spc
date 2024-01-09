@@ -1,14 +1,24 @@
 connection "btp" {
   plugin = "ajmaradiaga/btp"
 
-  # You will need to create a service key for the Cloud Management Service. 
-  # You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis.
+  # User email used to log in to SAP BTP. Required.
+  # This can also be set via the `BTP_USERNAME` environment variable.
+  # username = "user@domain.com"
 
-  # URL of the Accounts Service. Required.
+  # User password used to log in to SAP BTP. Required.
+  # This can also be set via the `BTP_PASSWORD` environment variable.
+  # password = "My-BTP-Passw0rd"
+
+  # You will need to create a service key for the Cloud Management Service. Required.
+  # You can get the instructions on how to get an access token for the SAP Cloud Management Service APIs here: https://help.sap.com/docs/btp/sap-business-technology-platform/getting-access-token-for-sap-cloud-management-service-apis.
+  # This can also be set via the `BTP_CIS_SERVICE_KEY_PATH` environment variable. Required.
+  # cis_service_key_path = "~/service_keys/cis_global.json"
+
+  # URL of the Accounts Service. Optional.
   # This can also be set via the `BTP_CIS_ACCOUNTS_SERVICE_URL` environment variable.
   # cis_accounts_service_url = "https://accounts-service.cfapps.[region].hana.ondemand.com"
   
-  # URL of the Entitlements Service. Required.
+  # URL of the Entitlements Service. Optional.
   # This can also be set via the `BTP_CIS_ENTITLEMENTS_SERVICE_URL` environment variable.
   # cis_entitlements_service_url = "https://entitlements-service.cfapps.[region].hana.ondemand.com"
 
@@ -33,12 +43,4 @@ connection "btp" {
   # The value in the service key doesn't contain the path, /oauth/token, if not specified the plugin will append it automatically.
   # This can also be set via the `BTP_CIS_TOKEN_URL` environment variable. Optional.
   # cis_token_url = "https://[global-account-subdomain].authentication.[region].hana.ondemand.com"
-
-  # User Email used to log in to SAP BTP.
-  # This can also be set via the `BTP_USERNAME` environment variable. Optional.
-  # username = "user@domain.com"
-
-  # User Password used to log in to SAP BTP.
-  # This can also be set via the `BTP_PASSWORD` environment variable. Optional.
-  # password = "My-BTP-Passw0rd"
 }
