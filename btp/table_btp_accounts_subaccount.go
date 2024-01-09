@@ -55,9 +55,9 @@ func listSubaccounts(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	logger.Trace("Hydrating list subaccounts")
 
 	// conn, err := connect(ctx, d)
-	btpClient, err := NewBTPClient(nil, d.Connection)
+	btpClient, err := NewBTPClient(nil, ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
+		logger.Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
 		return nil, err
 	}
 
@@ -65,7 +65,7 @@ func listSubaccounts(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	body, err := btpClient.Get(ctx, AccountsService, subAccountsPath, nil, nil)
 
 	if err != nil {
-		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
+		logger.Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
@@ -80,7 +80,7 @@ func listSubaccounts(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	logger.Debug("listAccount", "err", err)
 
 	if err != nil {
-		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
+		logger.Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
@@ -98,7 +98,7 @@ func getSubaccount(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 	logger := plugin.Logger(ctx)
 	logger.Trace("Hydrating get subaccount")
 
-	btpClient, err := NewBTPClient(nil, d.Connection)
+	btpClient, err := NewBTPClient(nil, ctx, d)
 	if err != nil {
 		return nil, err
 	}

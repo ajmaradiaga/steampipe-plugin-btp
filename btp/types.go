@@ -1,5 +1,15 @@
 package btp
 
+type TokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	IDToken      string `json:"id_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiresIn    int64  `json:"expires_in"`
+	Scope        string `json:"scope"`
+	JTI          string `json:"jti"`
+}
+
 type CustomProperty struct {
 	AccountGUID string `json:"accountGUID"`
 	Key         string `json:"key"`
