@@ -44,9 +44,9 @@ func listDataCenters(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 
 	logger.Trace("Hydrating list allowed data centers")
 
-	btpClient, err := NewBTPClient(nil, d)
+	btpClient, err := NewBTPClient(nil, ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
+		logger.Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "connection_error", err)
 		return nil, err
 	}
 
@@ -69,7 +69,7 @@ func listDataCenters(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	body, err := btpClient.Get(ctx, EntitlementService, path, nil, queryStrings)
 
 	if err != nil {
-		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
+		logger.Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
@@ -84,7 +84,7 @@ func listDataCenters(ctx context.Context, d *plugin.QueryData, h *plugin.Hydrate
 	logger.Warn(fnName, "err", err)
 
 	if err != nil {
-		plugin.Logger(ctx).Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
+		logger.Error(fmt.Sprintf("%s.%s", d.Table.Name, fnName), "api_error", err)
 		return nil, err
 	}
 
