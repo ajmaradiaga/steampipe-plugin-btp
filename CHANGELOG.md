@@ -1,3 +1,9 @@
+## v0.1.2 [2024-01-10]
+
+_Fixes:_
+
+- Fixing issues in markdown table HTML tags
+
 ## v0.1.1 [2024-01-10]
 
 _Fixes:_
