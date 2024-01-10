@@ -1,3 +1,9 @@
+## v0.1.1 [2024-01-10]
+
+_Fixes:_
+
+- Minor issue in documentation
+
 ## v0.1.0 [2024-01-09]
 
 _What's new?_
